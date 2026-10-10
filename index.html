@@ -10,6 +10,9 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap"
         rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <style>
         :root {
             color-scheme: light dark;
@@ -700,12 +703,14 @@
             font: 800 1.4rem/1.15 var(--f-display);
         }
     </style>
+
+    <link rel="stylesheet" href="/static/lobby.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 
 <body>
     <main class="app">
-        <h1>Word Duel</h1>
+        <h1>Word&nbsp;&nbsp;Duel</h1>
 
         <div class="rejoin" id="rejoinBox" hidden>
             <strong id="rejoinText"></strong>
@@ -934,7 +939,7 @@
         function modeText(n) {
             if (n === 1) return 'Solo. Find every word on your own.';
             if (n < 4) return 'Everyone plays alone on their own board, racing to find all the words first.';
-            return `Teams of 2. Each team has its own board with the same words, and the first team to find them all wins. The first two to join are a team, then the next two, and so on.`;
+            return `Teams of 2. Each team has its own board with the same words.`;
         }
 
         /* ---------- lobby ---------- */

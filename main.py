@@ -7,11 +7,19 @@ from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from game import VALID_SIZES, Room
 
 app = FastAPI()
 BASE = Path(__file__).parent
+
+app.mount(
+    "/static",
+    StaticFiles(directory=BASE / "static"),
+    name="static",
+)
+
 
 rooms = {}        # room code -> Room
 sockets = {}      # room code -> {player id -> WebSocket}

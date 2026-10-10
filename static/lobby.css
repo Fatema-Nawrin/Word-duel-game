@@ -1,0 +1,348 @@
+/* Word Duel — pastel arcade lobby
+   Add this stylesheet after the existing <style> block.
+   No JavaScript changes are required. */
+
+:root {
+    --arcade-night: #20243f;
+    --arcade-paper: #fffaff;
+    --arcade-muted: #77758f;
+    --arcade-line: #e4dff1;
+    --arcade-lavender: #c8b8ff;
+    --arcade-pink: #ffc6d9;
+    --arcade-mint: #b9f0de;
+    --arcade-yellow: #ffe19b;
+    --arcade-blue: #bbd8ff;
+    --arcade-purple: #7964dc;
+}
+
+/* Pastel arcade backdrop while the player is in the lobby */
+body:has(#join:not([hidden])) {
+    min-height: 100vh;
+    color: var(--arcade-night);
+    background:
+        radial-gradient(ellipse at 8% 12%, rgba(184, 217, 255, 0.62), transparent 31rem),
+        radial-gradient(ellipse at 92% 18%, rgba(255, 224, 198, 0.72), transparent 28rem),
+        radial-gradient(ellipse at 78% 92%, rgba(222, 252, 198, 0.72), transparent 30rem),
+        #f8f6ff;
+}
+
+.app:has(#join:not([hidden])) {
+    width: min(100% - 32px, 1080px);
+    min-height: 100vh;
+    margin-inline: auto;
+    padding: clamp(32px, 7vh, 76px) 0 48px;
+    align-content: start;
+    justify-items: center;
+    gap: 24px;
+}
+
+/* Wordmark */
+/* Cursive arcade wordmark */
+.app:has(#join:not([hidden]))>h1 {
+    position: relative;
+    isolation: isolate;
+    margin: 0;
+    color: var(--arcade-night);
+    font-family: "Pacifico", cursive;
+    font-size: clamp(3rem, 8vw, 5rem);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: 0;
+    text-align: center;
+    text-shadow: 0 5px 0 rgba(190, 171, 254, 0.72);
+}
+
+
+.app:has(#join:not([hidden]))>h1::after {
+    content: "A tiny game of big words";
+    display: block;
+    margin-top: 14px;
+    color: var(--arcade-muted);
+    font: 500 clamp(.88rem, 2vw, 1.05rem)/1.4 var(--f-body);
+    letter-spacing: .015em;
+    text-shadow: none;
+}
+
+/* Join/create card */
+#join.join {
+    width: min(100%, 470px);
+    max-width: none;
+    gap: 20px;
+    padding: clamp(22px, 5vw, 34px);
+    border: 1px solid rgba(200, 184, 255, .72);
+    border-radius: 28px;
+    background: rgba(255, 254, 254, 0.94);
+    box-shadow:
+        0 24px 70px rgba(54, 45, 99, .12),
+        0 5px 0 rgba(200, 184, 255, .42);
+    backdrop-filter: blur(12px);
+    animation: lobby-arrive .45s cubic-bezier(.2, .8, .2, 1) both;
+}
+
+#join .field {
+    gap: 8px;
+}
+
+#join .field label {
+    color: #625c82;
+    font-size: .76rem;
+    font-weight: 800;
+    letter-spacing: .11em;
+}
+
+#join .field input,
+#join .field select {
+    min-height: 52px;
+    padding: 12px 14px;
+    border: 1.5px solid var(--arcade-line);
+    border-radius: 14px;
+    background: #fff;
+    color: var(--arcade-night);
+    font: 500 1rem/1.4 var(--f-body);
+    box-shadow: 0 2px 0 rgba(32, 36, 63, .025);
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+#join .field input::placeholder {
+    color: #aaa5bd;
+}
+
+#join .field input:focus,
+#join .field select:focus {
+    border-color: var(--arcade-purple);
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(200, 184, 255, .35);
+}
+
+#join #code {
+    letter-spacing: .16em;
+    font-size: 1.05rem;
+}
+
+/* Create room / Join room segmented choice */
+#join .modes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 6px;
+    border: 1px solid #ece7f7;
+    border-radius: 17px;
+    background: #f2effb;
+}
+
+#join .mode {
+    min-width: 0;
+}
+
+#join .mode span {
+    min-height: 46px;
+    display: grid;
+    place-items: center;
+    padding: 10px 8px;
+    border: 1.5px solid transparent;
+    border-radius: 12px;
+    color: #77718e;
+    font-size: .92rem;
+    transition: background .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+#join .mode input:checked+span {
+    border-color: var(--arcade-night);
+    background: var(--arcade-night);
+    color: #fff;
+    box-shadow: 0 3px 0 rgba(32, 36, 63, .18);
+}
+
+#join .mode input:focus-visible+span {
+    outline: 3px solid var(--arcade-purple);
+    outline-offset: 3px;
+}
+
+#join .mode:has(input:not(:checked)):hover span {
+    background: rgba(255, 255, 255, .8);
+    color: var(--arcade-night);
+}
+
+/* Helpful hint under the player-count dropdown */
+#join .hint {
+    color: var(--arcade-muted);
+    font-size: .85rem;
+    line-height: 1.5;
+}
+
+/* Main action */
+#join #goBtn {
+    position: relative;
+    width: 100%;
+    min-height: 56px;
+    padding: 14px 20px;
+    border: 2px solid var(--arcade-night);
+    border-radius: 16px;
+    background: var(--arcade-purple);
+    color: #fff;
+    font: 800 1rem/1.2 var(--f-body);
+    letter-spacing: .01em;
+    box-shadow: 0 5px 0 var(--arcade-night);
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+
+#join #goBtn:hover {
+    opacity: 1;
+    filter: brightness(1.04);
+    transform: translateY(-2px);
+    box-shadow: 0 7px 0 var(--arcade-night);
+}
+
+#join #goBtn:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 var(--arcade-night);
+}
+
+#join #goBtn:focus-visible,
+#rejoinBox .btn:focus-visible {
+    outline: 3px solid #f09abb;
+    outline-offset: 4px;
+}
+
+/* Validation feedback keeps its existing role=alert */
+#join .err {
+    min-height: 0;
+    color: #b42355;
+    font-size: .9rem;
+}
+
+#join .err:empty {
+    display: none;
+}
+
+/* Rejoin card shares the new lobby styling */
+#rejoinBox.rejoin {
+    width: min(100%, 470px);
+    max-width: none;
+    gap: 12px;
+    padding: 22px;
+    border: 1px solid rgba(200, 184, 255, .72);
+    border-radius: 22px;
+    background: var(--arcade-paper);
+    box-shadow: 0 18px 50px rgba(54, 45, 99, .1);
+}
+
+#rejoinBox .btn {
+    min-height: 48px;
+    border: 2px solid var(--arcade-night);
+    border-radius: 14px;
+    background: var(--arcade-mint);
+    color: var(--arcade-night);
+    box-shadow: 0 4px 0 var(--arcade-night);
+}
+
+#rejoinBox .btn:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+}
+
+/* Waiting room: matching card, code badge and player chips */
+#waiting.waiting {
+    width: min(100%, 560px);
+    max-width: none;
+    gap: 16px;
+    padding: clamp(20px, 4vw, 30px);
+    border: 1px solid rgba(200, 184, 255, .72);
+    border-radius: 24px;
+    background: rgba(255, 250, 255, .96);
+    box-shadow: 0 20px 60px rgba(54, 45, 99, .1);
+}
+
+#waiting h2 {
+    color: var(--arcade-night);
+    font-size: clamp(1.35rem, 4vw, 1.8rem);
+}
+
+#waiting .code {
+    padding: 8px 14px;
+    border: 1px dashed #a99ae9;
+    border-radius: 12px;
+    background: #f0ebff;
+    color: #5744b6;
+    font-size: 1.7rem;
+    letter-spacing: .18em;
+}
+
+#waiting li {
+    min-height: 56px;
+    padding: 9px 12px;
+    border: 1px solid #ece7f7;
+    border-radius: 14px;
+    background: #fff;
+}
+
+#waiting li:nth-child(4n + 1) {
+    background: #f1edff;
+}
+
+#waiting li:nth-child(4n + 2) {
+    background: #fff0f5;
+}
+
+#waiting li:nth-child(4n + 3) {
+    background: #eafaf4;
+}
+
+#waiting li:nth-child(4n + 4) {
+    background: #fff7df;
+}
+
+#waiting li .badge {
+    width: 40px;
+    height: 40px;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .95), 0 0 0 3px #e0d8f4;
+}
+
+@keyframes lobby-arrive {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(.985);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 520px) {
+    .app:has(#join:not([hidden])) {
+        width: min(100% - 24px, 1080px);
+        padding-top: 52px;
+        gap: 22px;
+    }
+
+    .app:has(#join:not([hidden]))>h1::before {
+        top: -22px;
+        right: -20px;
+        font-size: 1.5rem;
+    }
+
+    #join.join {
+        padding: 22px 18px;
+        gap: 18px;
+        border-radius: 22px;
+    }
+
+    #join .mode span {
+        font-size: .86rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #join.join {
+        animation: none;
+    }
+
+    #join .field input,
+    #join .field select,
+    #join .mode span,
+    #join #goBtn {
+        transition: none;
+    }
+}
