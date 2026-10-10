@@ -18,7 +18,7 @@
             --ink: #14213d;
             --muted: #56627f;
             --line: #ccd4e2;
-            /* four team colours: fill, text on paper, dark avatar */
+            /* four team colours: fill, text on paper */
             --t0: #4f46e5;
             --t1: #b45309;
             --t2: #0f766e;
@@ -27,10 +27,6 @@
             --t1t: #92400e;
             --t2t: #0f766e;
             --t3t: #9d174d;
-            --t0d: #2f2a9e;
-            --t1d: #7a3606;
-            --t2d: #0a4f4a;
-            --t3d: #831843;
             --sel: rgba(20, 33, 61, 0.16);
             --danger: #b42318;
             --f-display: 'Bricolage Grotesque', system-ui, sans-serif;
@@ -110,6 +106,22 @@
             color: var(--muted);
         }
 
+        .rejoin {
+            display: grid;
+            gap: 6px;
+            max-width: 420px;
+            background: var(--paper);
+            border: 2px solid var(--t0);
+            border-radius: 10px;
+            padding: 14px 18px;
+        }
+
+        .rejoin .btn {
+            background: var(--t0);
+            border-color: var(--t0);
+            color: #fff;
+        }
+
         .err {
             margin: 0;
             color: var(--danger);
@@ -117,45 +129,38 @@
             min-height: 1.4em;
         }
 
-        /* team colours: each element with a t0..t3 class picks up that team's colours */
+        /* team colours: an element with a t0..t3 class passes that team's colours to everything inside it */
         .t0 {
             --tc: var(--t0);
             --tct: var(--t0t);
-            --tcd: var(--t0d);
         }
 
         .t1 {
             --tc: var(--t1);
             --tct: var(--t1t);
-            --tcd: var(--t1d);
         }
 
         .t2 {
             --tc: var(--t2);
             --tct: var(--t2t);
-            --tcd: var(--t2d);
         }
 
         .t3 {
             --tc: var(--t3);
             --tct: var(--t3t);
-            --tcd: var(--t3d);
         }
 
-        .a0 {
-            --ac: var(--t0);
+        /* avatars: every character is a round badge */
+        .badge {
+            display: block;
+            flex: none;
+            border-radius: 50%;
         }
 
-        .a1 {
-            --ac: var(--t1);
-        }
-
-        .a2 {
-            --ac: var(--t2);
-        }
-
-        .a3 {
-            --ac: var(--t3);
+        .badge svg {
+            display: block;
+            width: 100%;
+            height: 100%;
         }
 
         /* lobby */
@@ -265,11 +270,24 @@
         }
 
         .waiting li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             background: var(--bg);
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 6px 10px;
             font-weight: 500;
             overflow-wrap: anywhere;
+        }
+
+        .waiting li .badge {
+            width: 36px;
+            height: 36px;
+            box-shadow: 0 0 0 2px var(--line);
+        }
+
+        .waiting li.pop .badge {
+            animation: drop 0.5s cubic-bezier(.3, 1.4, .5, 1);
         }
 
         .code {
@@ -325,10 +343,34 @@
             margin: 0;
             min-height: 1.6em;
             font-weight: 500;
+            color: var(--tct);
         }
 
-        .msg.tt {
-            color: var(--tct);
+        .roster {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 18px;
+        }
+
+        .who {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .who .badge {
+            width: 34px;
+            height: 34px;
+            box-shadow: 0 0 0 2px var(--tc);
+        }
+
+        .who.away {
+            opacity: 0.45;
+        }
+
+        .who.me .badge {
+            box-shadow: 0 0 0 3px var(--ink);
         }
 
         .picked {
@@ -353,13 +395,19 @@
             padding: 0 5px;
         }
 
-        .grid {
+        /* the board: letters in .grid, characters in .pawns on top so they can slide */
+        .stage {
             container-type: inline-size;
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+        }
+
+        .grid {
             display: grid;
             grid-template-columns: repeat(var(--n, 12), 1fr);
             aspect-ratio: 1;
             width: 100%;
-            max-width: 640px;
             background: var(--paper);
             border: 2px solid var(--ink);
             border-radius: 6px;
@@ -384,7 +432,7 @@
         }
 
         .cell.anch {
-            box-shadow: inset 0 0 0 3px var(--ac);
+            box-shadow: inset 0 0 0 3px var(--tc);
         }
 
         .cell.sel {
@@ -393,31 +441,64 @@
             color: var(--ink);
         }
 
-        .av {
+        /* the cell you stand on: a ring, plus its letter repeated in a chip, because your character covers the letter */
+        .cell.here {
+            box-shadow: inset 0 0 0 3px var(--tc);
+        }
+
+        .cell.here::after {
+            content: attr(data-l);
             position: absolute;
-            top: calc(4% + var(--rw, 0) * 30%);
-            right: calc(4% + var(--k, 0) * 30%);
-            width: 44%;
-            height: 44%;
-            border-radius: 50%;
-            display: grid;
-            place-items: center;
-            font: 700 calc(100cqw / var(--n, 12) * 0.26) var(--f-body);
-            font-style: normal;
-            color: #fff;
-            background: var(--tcd);
-            border: 2px solid var(--paper);
+            left: 7%;
+            top: 5%;
+            font-size: 0.55em;
+            line-height: 1.25;
+            padding: 0 0.3em;
+            border-radius: 0.3em;
+            background: var(--ink);
+            color: var(--bg);
+        }
+
+        .pawns {
+            position: absolute;
+            inset: 2px;
+            pointer-events: none;
+        }
+
+        .pawn {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: calc(100% / var(--n, 12));
+            height: calc(100% / var(--n, 12));
+            transform: translate(calc(var(--c, 0) * 100%), calc(var(--r, 0) * 100%));
+            transition: transform 0.14s ease-out;
             z-index: 1;
         }
 
-        .av.me {
-            border-color: var(--ink);
-            box-shadow: 0 0 0 2px var(--paper);
+        .pawn.me {
             z-index: 2;
         }
 
-        .av.drop {
+        .pawn .badge {
+            position: absolute;
+            right: calc(-8% + var(--o, 0) * 28%);
+            bottom: -10%;
+            width: 72%;
+            height: 72%;
+            box-shadow: 0 0 0 2px var(--tc), 0 2px 4px rgba(0, 0, 0, 0.35);
+        }
+
+        .pawn.me .badge {
+            box-shadow: 0 0 0 3px var(--ink), 0 2px 5px rgba(0, 0, 0, 0.4);
+        }
+
+        .pawn .badge.drop {
             animation: drop 0.6s cubic-bezier(.3, 1.4, .5, 1);
+        }
+
+        .pawn .badge.hop {
+            animation: hop 0.16s ease-out;
         }
 
         @keyframes drop {
@@ -432,10 +513,39 @@
             }
         }
 
+        @keyframes hop {
+            45% {
+                transform: translateY(-16%);
+            }
+        }
+
         @media (prefers-reduced-motion: reduce) {
-            .av.drop {
+            .pawn {
+                transition: none;
+            }
+
+            .pawn .badge.drop,
+            .pawn .badge.hop,
+            .waiting li.pop .badge {
                 animation: none;
             }
+        }
+
+
+        /* 3D board (Three.js). The flat grid above stays as a fallback when WebGL is not available. */
+        .stage.gl {
+            max-width: 760px;
+        }
+
+        .stage.gl .grid,
+        .stage.gl .pawns {
+            display: none;
+        }
+
+        .stage canvas.gl {
+            display: block;
+            width: 100%;
+            height: auto;
         }
 
         .side {
@@ -447,7 +557,7 @@
 
         .teams {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
             gap: 10px;
         }
 
@@ -458,11 +568,14 @@
             padding: 10px 12px;
             min-width: 0;
             display: grid;
-            gap: 2px;
+            gap: 4px;
             align-content: start;
         }
 
         .tbox .tl {
+            display: flex;
+            align-items: center;
+            gap: 6px;
             font-size: 0.75rem;
             font-weight: 700;
             letter-spacing: 0.08em;
@@ -471,16 +584,42 @@
             overflow-wrap: anywhere;
         }
 
+        .tbox .tl .badge {
+            width: 24px;
+            height: 24px;
+            box-shadow: 0 0 0 1.5px var(--tc);
+        }
+
         .tbox .sc {
             font: 800 2.4rem/1.05 var(--f-display);
             font-variant-numeric: tabular-nums;
             color: var(--tct);
         }
 
-        .tbox .pl {
+        .tbox .mems {
+            display: grid;
+            gap: 4px;
+        }
+
+        .tbox .mem {
+            display: flex;
+            align-items: center;
+            gap: 6px;
             font-size: 0.9rem;
             color: var(--muted);
             overflow-wrap: anywhere;
+        }
+
+        .tbox .mem .badge {
+            width: 22px;
+            height: 22px;
+            box-shadow: 0 0 0 1.5px var(--tc);
+        }
+
+        .tbox .done {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--tct);
         }
 
         .words h2 {
@@ -561,11 +700,18 @@
             font: 800 1.4rem/1.15 var(--f-display);
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 
 <body>
     <main class="app">
         <h1>Word Duel</h1>
+
+        <div class="rejoin" id="rejoinBox" hidden>
+            <strong id="rejoinText"></strong>
+            <button class="btn" type="button" id="rejoinBtn">Rejoin game</button>
+            <p class="hint">Shown because you left a game that is still running.</p>
+        </div>
 
         <form class="join" id="join">
             <div class="field">
@@ -614,8 +760,13 @@
             </div>
 
             <div class="board" id="board" hidden>
-                <div class="main">
-                    <div class="grid" id="grid" aria-label="Letter grid"></div>
+                <div class="main" id="mainCol">
+                    <p class="msg" id="msg" aria-live="polite"></p>
+                    <div class="roster" id="roster"></div>
+                    <div class="stage" id="stage">
+                        <div class="grid" id="grid" aria-label="Letter grid"></div>
+                        <div class="pawns" id="pawns" aria-hidden="true"></div>
+                    </div>
                     <p class="picked" id="picked" aria-live="polite"></p>
                     <p class="keys"><kbd>Arrows</kbd> move &nbsp; <kbd>Space</kbd> pick or deselect the letter you are
                         on. A word counts once all its letters are picked &nbsp; <kbd>Esc</kbd> clears all</p>
@@ -636,9 +787,138 @@
     </main>
 
     <script>
+        /* ---------- the eight characters ----------
+           Original round-badge characters drawn in code. The server gives every player
+           in a room a different number from 0 to 7. */
+        const INK = '#1d1b2e';
+        const ST = `stroke="${INK}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"`;
+        const LINE = (d, w = 2.2) => `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+        const eyeDot = (x, y, r = 4.2) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${INK}"/><circle cx="${x + r * 0.35}" cy="${y - r * 0.4}" r="${r * 0.34}" fill="#fff"/>`;
+        const blush = (x, y) => `<ellipse cx="${x}" cy="${y}" rx="5.2" ry="3" fill="#ff6b8e" opacity=".5"/>`;
+        const smile = (x, y, w = 9) => LINE(`M${x - w / 2} ${y} q${w / 2} ${w * 0.7} ${w} 0`);
+        function star(cx, cy, ro, ri, fill) {
+            const pts = [];
+            for (let i = 0; i < 10; i++) {
+                const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? ri : ro;
+                pts.push((cx + r * Math.cos(a)).toFixed(1) + ',' + (cy + r * Math.sin(a)).toFixed(1));
+            }
+            return `<polygon points="${pts.join(' ')}" fill="${fill}" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round"/>`;
+        }
+        // Shoulders whose lower edge follows the badge circle, so nothing sticks out of it.
+        function torso(y, fill) {
+            const dx = Math.sqrt(48 * 48 - (y - 50) * (y - 50));
+            const x1 = (50 - dx).toFixed(1), x2 = (50 + dx).toFixed(1);
+            return `<path d="M${x1} ${y} Q50 ${y - 16} ${x2} ${y} A48 48 0 0 1 ${x1} ${y} Z" fill="${fill}" ${ST}/>`;
+        }
+        const badge = (bg, inner) =>
+            `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">` +
+            `<circle cx="50" cy="50" r="48.5" fill="${bg}"/>${inner}` +
+            `<circle cx="50" cy="50" r="48.5" fill="none" stroke="${INK}" stroke-width="3"/></svg>`;
+
+        const AVATARS = [
+            {
+                name: 'Moon alien', svg: badge('#c8f2dc',
+                    torso(82, '#7c6cf0') +
+                    LINE('M38 24 Q33 10 26 9') + `<circle cx="26" cy="9" r="4" fill="#ffd166" ${ST}/>` +
+                    LINE('M62 24 Q67 10 74 9') + `<circle cx="74" cy="9" r="4" fill="#ffd166" ${ST}/>` +
+                    `<ellipse cx="50" cy="46" rx="27" ry="28" fill="#86e08a" ${ST}/>` +
+                    `<ellipse cx="50" cy="42" rx="14" ry="12" fill="#fff" ${ST}/>` +
+                    `<circle cx="50" cy="43" r="7.5" fill="${INK}"/><circle cx="53" cy="40" r="2.6" fill="#fff"/>` +
+                    blush(33, 58) + blush(67, 58) + smile(50, 60, 12))
+            },
+            {
+                name: 'Little wizard', svg: badge('#ffe9a8',
+                    torso(82, '#4a49b8') +
+                    `<circle cx="29" cy="56" r="8" fill="#8a5a3c" ${ST}/><circle cx="71" cy="56" r="8" fill="#8a5a3c" ${ST}/>` +
+                    `<circle cx="50" cy="56" r="22" fill="#ffdcbc" ${ST}/>` +
+                    eyeDot(42, 58) + eyeDot(58, 58) + blush(35, 65) + blush(65, 65) + smile(50, 66, 8) +
+                    `<ellipse cx="50" cy="42" rx="30" ry="8" fill="#6a4fd8" ${ST}/>` +
+                    `<path d="M28 41 Q44 30 54 7 Q60 28 72 41 Q50 47 28 41 Z" fill="#7b5ff0" ${ST}/>` +
+                    star(52, 28, 6.5, 2.8, '#ffd166'))
+            },
+            {
+                name: 'Warrior', svg: badge('#ffd0cc',
+                    torso(82, '#8f9bb3') + `<path d="M38 74 Q50 82 62 74 L60 84 L40 84 Z" fill="#d6453d" ${ST}/>` +
+                    `<circle cx="50" cy="58" r="21" fill="#f3c9a1" ${ST}/>` +
+                    eyeDot(42, 60) + eyeDot(58, 60) + LINE('M37 55 l6 1.5') + LINE('M63 55 l-6 1.5') +
+                    blush(36, 67) + blush(64, 67) + LINE('M45 70 q5 3 10 0') + LINE('M60 62 l4 6', 1.8) +
+                    `<path d="M44 26 Q50 4 68 9 Q57 14 59 27 Z" fill="#d6453d" ${ST}/>` +
+                    `<path d="M28 54 Q27 24 50 24 Q73 24 72 54 L65 54 Q50 44 35 54 Z" fill="#aab4c8" ${ST}/>` +
+                    `<path d="M28 52 L36 52 L35 69 Q30 66 27 58 Z" fill="#8f9bb3" ${ST}/><path d="M72 52 L64 52 L65 69 Q70 66 73 58 Z" fill="#8f9bb3" ${ST}/>` +
+                    `<rect x="48" y="44" width="4" height="17" rx="1.5" fill="#8f9bb3" ${ST}/>` +
+                    `<path d="M32 36 Q50 28 68 36" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>`)
+            },
+            {
+                name: 'Witch', svg: badge('#ffdcb8',
+                    torso(82, '#3b2a63') + `<path d="M42 74 Q50 80 58 74 L56 82 L44 82 Z" fill="#ff8a3d" ${ST}/>` +
+                    `<path d="M28 52 Q20 66 26 80 Q34 72 33 58 Z" fill="#ff8a3d" ${ST}/><path d="M72 52 Q80 66 74 80 Q66 72 67 58 Z" fill="#ff8a3d" ${ST}/>` +
+                    `<circle cx="50" cy="57" r="22" fill="#ffe0c7" ${ST}/>` +
+                    eyeDot(42, 59) + eyeDot(58, 59) + LINE('M37 54 l-3 -2') + LINE('M63 54 l3 -2') +
+                    blush(35, 66) + blush(65, 66) + smile(50, 67, 8) +
+                    `<ellipse cx="50" cy="43" rx="33" ry="8.5" fill="#2d2a4a" ${ST}/>` +
+                    `<path d="M32 42 Q44 32 48 18 Q50 10 62 6 Q58 16 60 24 Q66 34 69 42 Q50 49 32 42 Z" fill="#3a3560" ${ST}/>` +
+                    `<path d="M33 40 Q50 47 68 40 L69 44 Q50 51 32 44 Z" fill="#ff8a3d" ${ST}/>` +
+                    `<rect x="45" y="40" width="10" height="8" rx="1.5" fill="#ffd166" ${ST}/>`)
+            },
+            {
+                name: 'Fox', svg: badge('#d4eed1',
+                    torso(82, '#3b6fe0') +
+                    `<path d="M24 48 L21 17 L45 32 Z" fill="#ff9442" ${ST}/><path d="M76 48 L79 17 L55 32 Z" fill="#ff9442" ${ST}/>` +
+                    `<path d="M28 40 L26 25 L38 33 Z" fill="#4a2c2a"/><path d="M72 40 L74 25 L62 33 Z" fill="#4a2c2a"/>` +
+                    `<ellipse cx="50" cy="54" rx="28" ry="23" fill="#ff9442" ${ST}/>` +
+                    `<path d="M24 58 Q32 74 50 74 Q68 74 76 58 Q64 56 50 64 Q36 56 24 58 Z" fill="#fff" ${ST}/>` +
+                    `<ellipse cx="50" cy="63" rx="4.2" ry="3" fill="${INK}"/>` +
+                    eyeDot(38, 52) + eyeDot(62, 52) + blush(31, 61) + blush(69, 61))
+            },
+            {
+                name: 'Panda', svg: badge('#ffd7e6',
+                    torso(82, '#6fbf73') +
+                    `<circle cx="27" cy="31" r="10" fill="#2a2840" ${ST}/><circle cx="73" cy="31" r="10" fill="#2a2840" ${ST}/>` +
+                    `<ellipse cx="50" cy="52" rx="28" ry="24" fill="#fff" ${ST}/>` +
+                    `<ellipse cx="38" cy="50" rx="7.5" ry="9.5" fill="#2a2840" transform="rotate(20 38 50)"/>` +
+                    `<ellipse cx="62" cy="50" rx="7.5" ry="9.5" fill="#2a2840" transform="rotate(-20 62 50)"/>` +
+                    `<circle cx="38.5" cy="50" r="3.2" fill="#fff"/><circle cx="38.8" cy="50.3" r="1.6" fill="${INK}"/>` +
+                    `<circle cx="61.5" cy="50" r="3.2" fill="#fff"/><circle cx="61.8" cy="50.3" r="1.6" fill="${INK}"/>` +
+                    `<ellipse cx="50" cy="60" rx="5" ry="3.6" fill="#2a2840"/>` +
+                    LINE('M50 63.5 V66') + LINE('M44 67 q6 5 12 0') + blush(30, 62) + blush(70, 62))
+            },
+            {
+                name: 'Pirate', svg: badge('#e0d6ff',
+                    torso(82, '#2f4b8a') + `<path d="M40 73 L50 84 L60 73 Z" fill="#eef0f8" ${ST}/>` +
+                    `<circle cx="50" cy="55" r="23" fill="#f3c9a1" ${ST}/>` +
+                    eyeDot(40, 57) + `<ellipse cx="62" cy="56" rx="8" ry="7" fill="${INK}"/>` + LINE('M54 53 L30 46') +
+                    blush(34, 65) + smile(50, 66, 14) +
+                    `<circle cx="27" cy="64" r="2.8" fill="none" stroke="#ffc233" stroke-width="2"/>` +
+                    `<path d="M72 44 q13 -3 15 9 q-9 -5 -15 -3 Z" fill="#e5484d" ${ST}/>` +
+                    `<path d="M26 49 Q50 14 74 49 Q50 39 26 49 Z" fill="#e5484d" ${ST}/>` +
+                    `<circle cx="40" cy="40" r="2" fill="#fff"/><circle cx="50" cy="36" r="2" fill="#fff"/><circle cx="60" cy="40" r="2" fill="#fff"/>`)
+            },
+            {
+                name: 'Astronaut', svg: badge('#cbc3ff',
+                    torso(82, '#f4f6ff') + `<rect x="41" y="83" width="18" height="9" rx="3" fill="#ff6b6b" ${ST}/>` +
+                    LINE('M70 22 L75 15') + `<circle cx="76" cy="13" r="3.4" fill="#ff6b6b" ${ST}/>` +
+                    `<circle cx="50" cy="46" r="29" fill="#f4f6ff" ${ST}/>` +
+                    `<circle cx="21" cy="46" r="3.6" fill="#ffb347" ${ST}/><circle cx="79" cy="46" r="3.6" fill="#ffb347" ${ST}/>` +
+                    `<ellipse cx="50" cy="47" rx="21" ry="18" fill="#8fd3ff" ${ST}/>` +
+                    `<circle cx="50" cy="50" r="12" fill="#ffdcbc"/>` +
+                    eyeDot(45.5, 50, 2.6) + eyeDot(54.5, 50, 2.6) + smile(50, 55.5, 6) +
+                    LINE('M36 40 Q40 31 50 30', 3).replace(INK, '#fff'))
+            },
+        ];
+        const badgeEl = (i, extra) => {
+            const d = document.createElement('div');
+            d.className = 'badge' + (extra ? ' ' + extra : '');
+            d.title = AVATARS[i % AVATARS.length].name;
+            d.innerHTML = AVATARS[i % AVATARS.length].svg;
+            return d;
+        };
+
+        /* ---------- helpers ---------- */
         const $ = id => document.getElementById(id);
         const TEAM_NAMES = ['Indigo', 'Amber', 'Teal', 'Rose'];
-        let ws = null, S = null, seen = new Set(), lastRound = -1;
+        let notice = '';  // a standing note under the room code, such as why 3D is off
+        let ws = null, S = null, builtRound = -1, cells = [], waitingIds = new Set();
+        const pawns = new Map();  // player id -> the character's element on the board
 
         function el(tag, cls, text) {
             const e = document.createElement(tag);
@@ -646,7 +926,6 @@
             if (text !== undefined) e.textContent = text;
             return e;
         }
-        function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
         function fmt(sec) {
             sec = Math.max(0, Math.floor(sec));
             return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
@@ -674,48 +953,322 @@
         $('size').addEventListener('change', updateLobby);
         updateLobby();
 
+        /* ---------- connecting, and coming back ----------
+           The server gives every player a secret token. It is kept in this tab's sessionStorage, so
+           a refresh or a dropped connection can take the same seat (same team, avatar and picks). */
+        const wsBase = () => `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`;
+        let session = null, retries = 0, retryTimer = 0, gaveUp = false;
+        function loadSession() { try { return JSON.parse(sessionStorage.getItem('wd-session')); } catch (err) { return null; } }
+        function saveSession() { try { sessionStorage.setItem('wd-session', JSON.stringify(session)); } catch (err) { } }
+        function clearSession() { session = null; try { sessionStorage.removeItem('wd-session'); } catch (err) { } }
+        const rejoinUrl = x => `${wsBase()}/join/${x.code}?name=${encodeURIComponent(x.name)}&rejoin=${encodeURIComponent(x.token)}`;
+
         $('join').addEventListener('submit', e => {
             e.preventDefault();
             const name = $('name').value.trim() || 'Player';
             try { localStorage.setItem('wd-name', name); } catch (err) { }
-            const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-            const base = `${proto}://${location.host}/ws`;
             const q = `name=${encodeURIComponent(name)}`;
             if (currentMode() === 'create') {
-                connect(`${base}/create?${q}&size=${$('size').value}`);
+                connect(`${wsBase()}/create?${q}&size=${$('size').value}`, name);
             } else {
                 const code = $('code').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
                 if (!code) { $('joinErr').textContent = 'Enter the room code.'; return; }
-                connect(`${base}/join/${code}?${q}`);
+                connect(`${wsBase()}/join/${code}?${q}`, name);
             }
         });
 
-        function connect(url) {
+        // After a refresh: offer to take the seat back.
+        {
+            const old = loadSession();
+            if (old && old.code && old.token) {
+                session = old;
+                $('rejoinText').textContent = `You were playing in room ${old.code} as ${old.name}.`;
+                $('rejoinBox').hidden = false;
+                $('rejoinBtn').addEventListener('click', () => { gaveUp = false; connect(rejoinUrl(old), old.name); });
+            }
+        }
+
+        function connect(url, name) {
             $('joinErr').textContent = '';
-            ws = new WebSocket(url);
-            ws.onmessage = ev => {
+            clearTimeout(retryTimer);
+            const sock = ws = new WebSocket(url);
+            sock.onmessage = ev => {
                 const m = JSON.parse(ev.data);
-                if (m.type === 'error') { $('joinErr').textContent = m.text; return; }
-                if (m.type === 'state') {
-                    if (!S) { $('join').hidden = true; $('game').hidden = false; }
+                if (m.type === 'hello') {
+                    session = { code: m.code, token: m.token, name: name || (session && session.name) || 'Player' };
+                    saveSession();
+                } else if (m.type === 'error') {
+                    gaveUp = true;  // the server said no, so retrying would not help
+                    clearSession();
+                    $('rejoinBox').hidden = true;
+                    if (S) $('connMsg').textContent = m.text + ' Reload the page to start again.';
+                    else $('joinErr').textContent = m.text;
+                } else if (m.type === 'state') {
+                    if (!S) { $('join').hidden = true; $('rejoinBox').hidden = true; $('game').hidden = false; }
+                    retries = 0;
+                    $('connMsg').textContent = notice;
                     m.recv = performance.now();
                     S = m;
                     render();
                 }
             };
-            ws.onclose = () => {
-                if (S) $('connMsg').textContent = 'Disconnected from the server. Reload the page to start again.';
-                else if (!$('joinErr').textContent) $('joinErr').textContent = 'Could not connect to the server.';
+            sock.onclose = () => {
+                if (sock !== ws || gaveUp) return;
+                if (S && session && retries < 30) {
+                    // Connection dropped mid-game: keep trying to take the same seat back.
+                    retries++;
+                    $('connMsg').textContent = 'Connection lost. Reconnecting...';
+                    retryTimer = setTimeout(() => connect(rejoinUrl(session), session.name), Math.min(1000 * retries, 5000));
+                } else if (S) {
+                    $('connMsg').textContent = 'Disconnected from the server. Reload the page to rejoin.';
+                } else if (!$('joinErr').textContent) {
+                    $('joinErr').textContent = 'Could not connect to the server.';
+                }
             };
         }
 
         function send(obj) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); }
 
+
+        /* ---------- 3D board (Three.js) ----------
+           A raised board with keycap tiles. Picked tiles press down, found words rise in your
+           team colour, and the characters stand on coloured pedestals. If Three.js or WebGL is
+           missing, nothing here runs and the flat board is used instead. */
+        const B3 = (() => {
+            const api = { ready: false, tried: false };
+            let R, scene, cam, stage, group, N = 0, round3 = -1, tiles = [], pawns3 = new Map();
+            let col = {}, colKey = '', lastW = 0, sideMat, slabMat, topGeo, flatGeo;
+            const letterCache = new Map(), avCache = new Map();
+            const rm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            function readColours() {
+                const root = getComputedStyle(document.documentElement), main = getComputedStyle($('mainCol'));
+                const g = (cs, n, d) => cs.getPropertyValue(n).trim() || d;
+                const raw = {
+                    paper: g(root, '--paper', '#f7f9fc'), ink: g(root, '--ink', '#14213d'),
+                    line: g(root, '--line', '#ccd4e2'), tc: g(main, '--tc', '#4f46e5')
+                };
+                const key = Object.values(raw).join('|');
+                const changed = key !== colKey;
+                colKey = key;
+                col = { raw };
+                for (const k in raw) col[k] = new THREE.Color(raw[k]);
+                return changed;
+            }
+
+            function paintLetter(e) {
+                const x = e.cv.getContext('2d');
+                x.clearRect(0, 0, 128, 128);
+                x.fillStyle = e.light ? '#ffffff' : col.raw.ink;
+                x.font = '600 84px "IBM Plex Mono", ui-monospace, Consolas, monospace';
+                x.textAlign = 'center'; x.textBaseline = 'middle';
+                x.fillText(e.ch, 64, 70);
+                e.tex.needsUpdate = true;
+            }
+            function letterMat(ch, light) {
+                const key = ch + (light ? 'w' : 'k');
+                let e = letterCache.get(key);
+                if (!e) {
+                    const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+                    const tex = new THREE.CanvasTexture(cv);
+                    tex.anisotropy = R.capabilities.getMaxAnisotropy();
+                    e = { cv, tex, ch, light, mat: new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }) };
+                    letterCache.set(key, e);
+                    paintLetter(e);
+                }
+                return e.mat;
+            }
+
+            // The SVG badge drawn onto a canvas, with a ring in the team colour.
+            function avatarTex(i, ring, me) {
+                const key = i + '|' + ring + '|' + me;
+                let e = avCache.get(key);
+                if (e) return e;
+                const cv = document.createElement('canvas'); cv.width = cv.height = 256;
+                const tex = new THREE.CanvasTexture(cv);
+                tex.anisotropy = R.capabilities.getMaxAnisotropy();
+                e = tex;
+                avCache.set(key, e);
+                const img = new Image();
+                img.onload = () => {
+                    const x = cv.getContext('2d');
+                    x.clearRect(0, 0, 256, 256);
+                    x.beginPath(); x.arc(128, 128, 126, 0, 7); x.fillStyle = me ? col.raw.ink : ring; x.fill();
+                    if (me) { x.beginPath(); x.arc(128, 128, 118, 0, 7); x.fillStyle = ring; x.fill(); }
+                    const pad = me ? 16 : 10;
+                    x.drawImage(img, pad, pad, 256 - 2 * pad, 256 - 2 * pad);
+                    tex.needsUpdate = true;
+                };
+                img.src = 'data:image/svg+xml;charset=utf-8,' +
+                    encodeURIComponent(AVATARS[i % AVATARS.length].svg.replace('<svg ', '<svg width="256" height="256" '));
+                return e;
+            }
+
+            api.init = function (host) {
+                api.tried = true;
+                if (typeof THREE === 'undefined') { api.why = 'Three.js did not load (no internet, or the CDN is blocked)'; return false; }
+                try {
+                    R = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                    if (!R.getContext()) { api.why = 'WebGL is not available in this browser'; return false; }
+                } catch (err) { api.why = 'WebGL failed to start: ' + err.message; return false; }
+                stage = host;
+                R.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+                R.domElement.className = 'gl';
+                R.domElement.setAttribute('aria-hidden', 'true');
+                stage.append(R.domElement);
+                stage.classList.add('gl');
+                scene = new THREE.Scene();
+                cam = new THREE.PerspectiveCamera(22, 1, 0.1, 400);
+                scene.add(new THREE.AmbientLight(0xffffff, 0.64));
+                const sun = new THREE.DirectionalLight(0xffffff, 0.46);
+                sun.position.set(-4, 10, 6);
+                scene.add(sun);
+                topGeo = new THREE.BoxGeometry(0.94, 0.5, 0.94);
+                flatGeo = new THREE.PlaneGeometry(0.8, 0.8);
+                if (window.ResizeObserver) new ResizeObserver(() => fit()).observe(stage);
+                if (document.fonts) document.fonts.load('600 84px "IBM Plex Mono"').then(() => letterCache.forEach(paintLetter)).catch(() => { });
+                api.ready = true;
+                tick();
+                return true;
+            };
+
+            function fit() {
+                if (!R) return;
+                const w = Math.max(240, stage.clientWidth), h = Math.round(w * 0.82);
+                lastW = stage.clientWidth;
+                R.setSize(w, h, false);
+                cam.aspect = w / h;
+                const n = N || 12, d = n * 2.6, pitch = 56 * Math.PI / 180;
+                cam.position.set(0, d * Math.sin(pitch), d * Math.cos(pitch) + n * 0.02);
+                cam.lookAt(0, -0.2, n * 0.02);
+                cam.updateProjectionMatrix();
+            }
+
+            function buildBoard(S) {
+                if (group) {
+                    scene.remove(group);
+                    tiles.forEach(t => t.top.dispose());
+                    sideMat.dispose(); slabMat.dispose();
+                }
+                pawns3.forEach(pw => scene.remove(pw.g));
+                pawns3.clear();
+                N = S.size; round3 = S.round;
+                group = new THREE.Group();
+                scene.add(group);
+                sideMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+                slabMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+                const slab = new THREE.Mesh(new THREE.BoxGeometry(N + 0.5, 0.5, N + 0.5), slabMat);
+                slab.position.y = -0.6;
+                group.add(slab);
+                tiles = [];
+                const half = (N - 1) / 2;
+                for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+                    const g = new THREE.Group();
+                    g.position.set(c - half, 0, r - half);
+                    const top = new THREE.MeshLambertMaterial({ color: 0xffffff });
+                    const box = new THREE.Mesh(topGeo, [sideMat, sideMat, top, sideMat, sideMat, sideMat]);
+                    box.position.y = -0.25;
+                    const letter = new THREE.Mesh(flatGeo, letterMat(S.grid[r][c], false));
+                    letter.rotation.x = -Math.PI / 2;
+                    letter.position.y = 0.004;
+                    g.add(box, letter);
+                    group.add(g);
+                    tiles.push({ g, top, letter, cur: 0, tgt: 0, ch: S.grid[r][c], light: false });
+                }
+                fit();
+            }
+
+            function recolour() {
+                sideMat.color.copy(col.paper).lerp(col.ink, 0.38);
+                slabMat.color.copy(col.ink.getHSL({}).l > 0.5 ? col.line : col.ink);  // a dark slab in both themes
+                letterCache.forEach(paintLetter);
+                pawns3.forEach(pw => pw.ped.material.color.copy(col.tc));
+            }
+
+            const mix = (a, b, t) => new THREE.Color().copy(a).lerp(b, t);
+
+            api.update = function (S, states) {
+                if (!api.ready) return;
+                const changed = readColours();
+                if (S.round !== round3 || S.size !== N) { buildBoard(S); recolour(); }
+                else if (changed) recolour();
+                if (stage.clientWidth !== lastW) fit();
+
+                for (let k = 0; k < tiles.length; k++) {
+                    const t = tiles[k], st = states[k];
+                    let top, h = 0, light = false;
+                    if (st === 'f') { top = col.tc; h = 0.14; light = true; }
+                    else if (st === 's') { top = mix(col.paper, col.ink, 0.24); h = -0.12; }
+                    else if (st === 'a') { top = mix(col.paper, col.tc, 0.45); h = -0.07; }
+                    else if (st === 'h') { top = mix(col.paper, col.tc, 0.3); h = 0.04; }
+                    else top = col.paper;
+                    t.top.color.copy(top);
+                    t.tgt = h;
+                    if (rm) t.cur = h;
+                    if (t.light !== light) { t.light = light; t.letter.material = letterMat(t.ch, light); }
+                }
+
+                const ids = new Set(S.players.map(p => p.id));
+                pawns3.forEach((pw, id) => { if (!ids.has(id)) { scene.remove(pw.g); pawns3.delete(id); } });
+                const half = (N - 1) / 2, inCell = {};
+                S.players.forEach(p => {
+                    const k = p.r * N + p.c;
+                    const o = inCell[k] = (k in inCell ? inCell[k] + 1 : 0);
+                    const me = p.id === S.you;
+                    let pw = pawns3.get(p.id);
+                    if (!pw) {
+                        const g = new THREE.Group();
+                        const ped = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.4, 0.14, 28), new THREE.MeshLambertMaterial({ color: col.tc }));
+                        ped.position.y = 0.07;
+                        const shadow = new THREE.Mesh(new THREE.CircleGeometry(0.5, 28), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.2, depthWrite: false }));
+                        shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.006;
+                        const sp = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true }));
+                        g.add(shadow, ped, sp);
+                        scene.add(g);
+                        pw = { g, ped, sp, x: p.c - half, z: p.r - half, hop: 0, drop: rm ? 0 : 1, k, key: '' };
+                        pawns3.set(p.id, pw);
+                    }
+                    if (pw.k !== k) { pw.k = k; if (!rm) pw.hop = 1; }
+                    pw.me = me;
+                    pw.ox = Math.min(o, 3) * 0.24;
+                    pw.tx = p.c - half; pw.tz = p.r - half;
+                    if (rm) { pw.x = pw.tx; pw.z = pw.tz; }
+                    const key = p.avatar + col.raw.tc + me;
+                    if (pw.key !== key) {
+                        pw.key = key;
+                        pw.sp.material.map = avatarTex(p.avatar, col.raw.tc, me);
+                        pw.sp.material.needsUpdate = true;
+                        const size = me ? 1.12 : 1.0;
+                        pw.sp.scale.set(size, size, 1);
+                        pw.sp.position.y = 0.14 + size * 0.5 - 0.04;
+                    }
+                });
+            };
+
+            function tick() {
+                requestAnimationFrame(tick);
+                if (!N || !stage.offsetParent) return;  // nothing to draw while the board is hidden
+                const f = rm ? 1 : 0.22, now = performance.now() / 1000;
+                for (const t of tiles) { t.cur += (t.tgt - t.cur) * f; t.g.position.y = t.cur; }
+                pawns3.forEach(pw => {
+                    pw.x += (pw.tx - pw.x) * (rm ? 1 : 0.3);
+                    pw.z += (pw.tz - pw.z) * (rm ? 1 : 0.3);
+                    pw.hop = Math.max(0, pw.hop - 0.09);
+                    pw.drop = Math.max(0, pw.drop - 0.035);
+                    const tile = tiles[pw.k], base = tile ? tile.cur : 0;
+                    const y = base + (pw.me ? Math.sin(now * 3) * 0.025 : 0) + 0.28 * Math.sin(Math.PI * (1 - pw.hop)) * (pw.hop > 0 ? 1 : 0) + 6 * pw.drop * pw.drop;
+                    pw.g.position.set(pw.x + pw.ox, y, pw.z);
+                });
+                R.render(scene, cam);
+            }
+            return api;
+        })();
+
         /* ---------- drawing ---------- */
         function teamLabel(t) {
             if (S.mode === 'teams') return TEAM_NAMES[t] + ' team';
-            const names = S.teams[t].names;
-            return names.length ? names[0] : TEAM_NAMES[t];
+            const m = S.teams[t].members;
+            return m.length ? m[0].name : TEAM_NAMES[t];
         }
 
         function updateTimer() {
@@ -730,8 +1283,66 @@
             $('wCode').textContent = S.code;
             const ul = $('wList');
             ul.innerHTML = '';
-            S.players.forEach(p => ul.append(el('li', '', p.name + (p.id === S.you ? ' (you)' : ''))));
+            S.players.forEach(p => {
+                const li = el('li', waitingIds.has(p.id) ? '' : 'pop');
+                li.append(badgeEl(p.avatar), document.createTextNode(p.name + (p.id === S.you ? ' (you)' : '')));
+                ul.append(li);
+            });
+            S.players.forEach(p => waitingIds.add(p.id));
             $('wMode').textContent = modeText(S.capacity) + ' The game starts when the room is full.';
+        }
+
+        // The letters are built once per round; after that only their classes change.
+        function buildGrid() {
+            const grid = $('grid');
+            grid.innerHTML = '';
+            cells = [];
+            for (let r = 0; r < S.size; r++) {
+                for (let c = 0; c < S.size; c++) {
+                    const d = el('div', 'cell', S.grid[r][c]);
+                    d.dataset.l = S.grid[r][c];
+                    grid.append(d);
+                    cells.push(d);
+                }
+            }
+            $('pawns').innerHTML = '';
+            pawns.clear();
+            builtRound = S.round;
+        }
+
+        function hop(node) {
+            const b = node.firstChild;
+            b.classList.remove('hop');
+            void b.offsetWidth;  // restart the animation
+            b.classList.add('hop');
+        }
+
+        // Characters live in their own layer, so they slide from cell to cell instead of jumping.
+        function syncPawns() {
+            const layer = $('pawns');
+            const ids = new Set(S.players.map(p => p.id));
+            for (const [id, node] of pawns) {
+                if (!ids.has(id)) { node.remove(); pawns.delete(id); }
+            }
+            const inCell = {};
+            S.players.forEach(p => {
+                const k = p.r * S.size + p.c;
+                const o = inCell[k] = (k in inCell ? inCell[k] + 1 : 0);
+                let node = pawns.get(p.id);
+                if (!node) {
+                    node = el('div', 'pawn');
+                    node.append(badgeEl(p.avatar, 'drop'));
+                    layer.append(node);
+                    pawns.set(p.id, node);
+                }
+                node.classList.toggle('me', p.id === S.you);
+                const pos = p.r + ',' + p.c;
+                if (node.dataset.pos && node.dataset.pos !== pos) hop(node);
+                node.dataset.pos = pos;
+                node.style.setProperty('--r', p.r);
+                node.style.setProperty('--c', p.c);
+                node.style.setProperty('--o', Math.min(o, 3));
+            });
         }
 
         function render() {
@@ -743,14 +1354,14 @@
             updateTimer();
 
             const n = S.size, mt = S.myTeam;
-            const grid = $('grid');
-            grid.style.setProperty('--n', n);
-            if (S.round !== lastRound) { seen = new Set(); lastRound = S.round; }
+            $('mainCol').className = 'main t' + mt;  // passes your team's colour to the board, roster and message
+            $('stage').style.setProperty('--n', n);
+            if (!B3.tried) { B3.init($('stage')); if (!B3.ready) { notice = '3D view is off: ' + B3.why + '. Showing the flat board.'; $('connMsg').textContent = notice; } }
+            if (S.round !== builtRound) buildGrid();
 
             // Only your own team's board is sent: its found words, its players and its picks.
             const foundCells = new Set();
             for (const f of S.found) for (const [r, c] of f.cells) foundCells.add(r * n + c);
-
             const me = S.players.find(p => p.id === S.you);
             const sel = new Set();
             if (me) me.picked.forEach(([r, c]) => sel.add(r * n + c));
@@ -758,42 +1369,52 @@
             S.players.forEach(p => {
                 if (p.id !== S.you) p.picked.forEach(([r, c]) => mates.add(r * n + c));
             });
-            const at = {};
-            S.players.forEach(p => { (at[p.r * n + p.c] = at[p.r * n + p.c] || []).push(p); });
-
-            let html = '';
-            for (let r = 0; r < n; r++) {
-                for (let c = 0; c < n; c++) {
-                    const k = r * n + c;
-                    let cls = 'cell';
-                    if (foundCells.has(k)) cls += ' f t' + mt;
-                    if (mates.has(k)) cls += ' anch a' + mt;
-                    if (sel.has(k)) cls += ' sel';
-                    const avs = (at[k] || []).map((p, i) =>
-                        `<i class="av t${mt}${p.id === S.you ? ' me' : ''}${seen.has(p.id) ? '' : ' drop'}" style="--k:${i % 3};--rw:${Math.floor(i / 3)}">${esc((p.name[0] || '?').toUpperCase())}</i>`
-                    ).join('');
-                    html += `<div class="${cls}">${esc(S.grid[r][c])}${avs}</div>`;
-                }
+            const hereK = me ? me.r * n + me.c : -1;
+            const states = [];
+            for (let k = 0; k < cells.length; k++) {
+                let cls = 'cell';
+                if (foundCells.has(k)) cls += ' f';
+                if (mates.has(k)) cls += ' anch';
+                if (sel.has(k)) cls += ' sel';
+                if (k === hereK) cls += ' here';
+                if (cells[k].className !== cls) cells[k].className = cls;
+                states.push(foundCells.has(k) ? 'f' : sel.has(k) ? 's' : mates.has(k) ? 'a' : k === hereK ? 'h' : '');
             }
-            grid.innerHTML = html;
-            S.players.forEach(p => seen.add(p.id));
+            syncPawns();
+            B3.update(S, states);
 
-            const msg = $('msg');
-            msg.className = 'msg tt t' + mt;
-            msg.textContent = S.message;
+            const roster = $('roster');
+            roster.innerHTML = '';
+            S.players.forEach(p => {
+                const w = el('span', 'who' + (p.id === S.you ? ' me' : '') + (p.connected === false ? ' away' : ''));
+                w.append(badgeEl(p.avatar), document.createTextNode(p.name + (p.id === S.you ? ' (you)' : '') + (p.connected === false ? ' (away)' : '')));
+                roster.append(w);
+            });
 
+            $('msg').textContent = S.message;
             const letters = me ? me.picked.map(([r, c]) => S.grid[r][c]).join(' ') : '';
-            $('picked').textContent = letters ? 'Your letters: ' + letters : 'Your letters: none yet';
+            $('picked').textContent = (letters ? 'Your letters: ' + letters : 'Your letters: none yet') +
+                (me ? '   ·   Standing on ' + S.grid[me.r][me.c] : '');
 
             // Progress of every team. You see how many words the others have, not which ones.
             const teams = $('teams');
             teams.innerHTML = '';
             for (const T of S.teams) {
                 const box = el('div', 't' + T.team + ' tbox');
-                const label = teamLabel(T.team) + (T.team === mt ? ' (you)' : '');
-                box.append(el('span', 'tl', label), el('span', 'sc', `${T.found}/${S.words.length}`));
-                if (S.mode === 'teams') box.append(el('span', 'pl', T.names.join(', ')));
-                if (T.done) box.append(el('span', 'pl', 'Finished'));
+                const head = el('span', 'tl');
+                if (S.mode !== 'teams' && T.members[0]) head.append(badgeEl(T.members[0].avatar));
+                head.append(document.createTextNode(teamLabel(T.team) + (T.team === mt ? ' (you)' : '')));
+                box.append(head, el('span', 'sc', `${T.found}/${S.words.length}`));
+                if (S.mode === 'teams') {
+                    const mems = el('span', 'mems');
+                    T.members.forEach(m => {
+                        const row = el('span', 'mem');
+                        row.append(badgeEl(m.avatar), document.createTextNode(m.name + (m.you ? ' (you)' : '') + (m.connected === false ? ' (away)' : '')));
+                        mems.append(row);
+                    });
+                    box.append(mems);
+                }
+                if (T.done) box.append(el('span', 'done', 'Finished'));
                 teams.append(box);
             }
 

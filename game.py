@@ -16,6 +16,7 @@ WORD_SETS = {
 }
 
 VALID_SIZES = (1, 2, 3, 4, 6, 8)
+AVATAR_COUNT = 8  # the page draws 8 characters; each player in a room gets a different one
 START_MESSAGE = "Find the words. Arrows move, Space picks a letter."
 
 
@@ -89,6 +90,8 @@ class Player:
     r: int
     c: int
     picked: list = field(default_factory=list)  # cells this player has picked
+    avatar: int = 0  # which of the 8 characters this player is
+    connected: bool = True  # False while they are away from a game that has started
 
 
 class Room:
@@ -149,7 +152,9 @@ class Room:
         if self.started or len(self.players) >= self.capacity:
             return None
         r, c = self._spawn()
-        player = Player(pid, name, None, r, c)
+        taken = {q.avatar for q in self.players.values()}
+        avatar = self.rng.choice([a for a in range(AVATAR_COUNT) if a not in taken])
+        player = Player(pid, name, None, r, c, avatar=avatar)
         self.players[pid] = player
         if len(self.players) == self.capacity:
             self.start()
@@ -163,7 +168,26 @@ class Room:
         self.new_round()
 
     def remove_player(self, pid):
-        self.players.pop(pid, None)
+        """Called when a player's connection closes.
+
+        Before the game starts the seat is freed. Once it has started the player
+        keeps their seat and team and is only marked away, so they can come back.
+        """
+        p = self.players.get(pid)
+        if not p:
+            return
+        if self.started:
+            p.connected = False
+        else:
+            del self.players[pid]
+
+    def reconnect(self, pid):
+        """Give a seat back to a player who left a game that is already running."""
+        p = self.players.get(pid)
+        if p and self.started:
+            p.connected = True
+            return p
+        return None
 
     def move(self, pid, dr, dc):
         p = self.players.get(pid)
@@ -254,13 +278,16 @@ class Room:
             "words": [{"word": w, "found": w in found} for w in self.words],
             "found": [{"cells": f["cells"]} for f in found.values()],
             "players": [
-                {"id": p.id, "name": p.name, "team": p.team, "r": p.r, "c": p.c,
-                 "picked": [list(x) for x in p.picked]}
+                {"id": p.id, "name": p.name, "team": p.team, "avatar": p.avatar,
+                 "connected": p.connected,
+                 "r": p.r, "c": p.c, "picked": [list(x) for x in p.picked]}
                 for p in visible
             ],
             "teams": [
                 {"team": t,
-                 "names": [p.name for p in self.players.values() if p.team == t],
+                 "members": [{"name": p.name, "avatar": p.avatar, "you": p.id == you,
+                              "connected": p.connected}
+                             for p in self.players.values() if p.team == t],
                  "found": len(self.found[t]),
                  "done": self.finished_at[t] is not None}
                 for t in range(self.team_count)

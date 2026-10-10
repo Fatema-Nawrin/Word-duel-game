@@ -1,6 +1,8 @@
 """Word Duel server. Run with:  python -m uvicorn main:app --reload"""
+import asyncio
 import json
 import secrets
+import time
 from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -11,8 +13,13 @@ from game import VALID_SIZES, Room
 app = FastAPI()
 BASE = Path(__file__).parent
 
-rooms = {}    # room code -> Room
-sockets = {}  # room code -> {player id -> WebSocket}
+rooms = {}        # room code -> Room
+sockets = {}      # room code -> {player id -> WebSocket}
+tokens = {}       # room code -> {secret token -> player id}, used to come back to a seat
+empty_since = {}  # room code -> when the last player left a running game
+
+# How long a running game is kept after everyone has left, so people can come back.
+KEEP_EMPTY_ROOM_SECONDS = 600
 
 # No 0/O or 1/I, so codes are easy to read out loud.
 CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
@@ -28,6 +35,20 @@ def new_code():
         code = "".join(secrets.choice(CODE_CHARS) for _ in range(4))
         if code not in rooms:
             return code
+
+
+def drop_room(code):
+    rooms.pop(code, None)
+    sockets.pop(code, None)
+    tokens.pop(code, None)
+    empty_since.pop(code, None)
+
+
+def drop_room_if_still_empty(code):
+    """Runs a while after the last player left a running game."""
+    since = empty_since.get(code)
+    if since is not None and not sockets.get(code) and time.monotonic() - since >= KEEP_EMPTY_ROOM_SECONDS - 1:
+        drop_room(code)
 
 
 async def broadcast(code):
@@ -48,14 +69,35 @@ async def refuse(ws, text):
     await ws.close()
 
 
-async def run_player(ws, code, name):
-    """Seat one player in an existing room and handle their messages until they leave."""
+async def run_player(ws, code, name, rejoin=""):
+    """Seat one player in an existing room and handle their messages until they leave.
+
+    `rejoin` is the secret token a player was given the first time. If it matches a
+    seat in a game that is already running, they get that seat back (same team,
+    same avatar, same picks) instead of being turned away.
+    """
     room = rooms[code]
-    pid = secrets.token_hex(4)
-    if not room.add_player(pid, name.strip()[:14] or "Player"):
-        await refuse(ws, "That room is full, or its game has already started.")
-        return
+    pid = tokens[code].get(rejoin) if rejoin else None
+    if pid and room.reconnect(pid):
+        token = rejoin
+        old = sockets[code].pop(pid, None)  # a stale connection of the same player, if any
+        if old is not None:
+            try:
+                await old.close()
+            except Exception:
+                pass
+    else:
+        pid = secrets.token_hex(4)
+        if not room.add_player(pid, name.strip()[:14] or "Player"):
+            await refuse(ws, "That room is full, or its game has already started.")
+            return
+        token = secrets.token_urlsafe(12)
+        tokens[code][token] = pid
+
+    empty_since.pop(code, None)
     sockets[code][pid] = ws
+    # The token goes only to this player. Other players only ever see the public id.
+    await ws.send_json({"type": "hello", "code": code, "token": token})
     await broadcast(code)
 
     try:
@@ -79,13 +121,22 @@ async def run_player(ws, code, name):
     except WebSocketDisconnect:
         pass
     finally:
-        room.remove_player(pid)
-        sockets[code].pop(pid, None)
-        if not sockets[code]:
-            rooms.pop(code, None)
-            sockets.pop(code, None)
-        else:
-            await broadcast(code)
+        # Only clean up if this is still the player's current connection.
+        if sockets.get(code, {}).get(pid) is ws:
+            sockets[code].pop(pid, None)
+            room.remove_player(pid)
+            if not room.started:
+                for t in [t for t, i in tokens[code].items() if i == pid]:
+                    del tokens[code][t]
+            if not sockets[code]:
+                if room.started:
+                    empty_since[code] = time.monotonic()
+                    asyncio.get_running_loop().call_later(
+                        KEEP_EMPTY_ROOM_SECONDS, drop_room_if_still_empty, code)
+                else:
+                    drop_room(code)
+            else:
+                await broadcast(code)
 
 
 @app.websocket("/ws/create")
@@ -97,14 +148,15 @@ async def create_room(ws: WebSocket, name: str = "Player", size: int = 4):
     code = new_code()
     rooms[code] = Room(size, code=code)
     sockets[code] = {}
+    tokens[code] = {}
     await run_player(ws, code, name)
 
 
 @app.websocket("/ws/join/{code}")
-async def join_room(ws: WebSocket, code: str, name: str = "Player"):
+async def join_room(ws: WebSocket, code: str, name: str = "Player", rejoin: str = ""):
     await ws.accept()
     code = "".join(ch for ch in code.upper() if ch.isalnum())[:8]
     if code not in rooms:
-        await refuse(ws, "No room with that code.")
+        await refuse(ws, "No room with that code. It may have closed.")
         return
-    await run_player(ws, code, name)
+    await run_player(ws, code, name, rejoin)
