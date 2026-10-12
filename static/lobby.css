@@ -1,29 +1,26 @@
-/* Word Duel — pastel arcade lobby
+/* Word Duel — pop arcade lobby
    Add this stylesheet after the existing <style> block.
    No JavaScript changes are required. */
 
 :root {
-    --arcade-night: #20243f;
-    --arcade-paper: #fffaff;
-    --arcade-muted: #77758f;
-    --arcade-line: #e4dff1;
-    --arcade-lavender: #c8b8ff;
-    --arcade-pink: #ffc6d9;
-    --arcade-mint: #b9f0de;
-    --arcade-yellow: #ffe19b;
-    --arcade-blue: #bbd8ff;
-    --arcade-purple: #7964dc;
+    --arcade-night: var(--ink);
+    --arcade-paper: var(--paper);
+    --arcade-muted: var(--muted);
+    --arcade-line: var(--line);
+    --arcade-pink: var(--t0);
+    --arcade-mint: var(--t2);
+    --arcade-yellow: var(--sticker-yellow);
+    --arcade-blue: var(--t1);
+    --arcade-purple: var(--t3);
 }
 
-/* Pastel arcade backdrop while the player is in the lobby */
+/* Match the dotted green game-page backdrop */
 body:has(#join:not([hidden])) {
     min-height: 100vh;
     color: var(--arcade-night);
     background:
-        radial-gradient(ellipse at 8% 12%, rgba(184, 217, 255, 0.62), transparent 31rem),
-        radial-gradient(ellipse at 92% 18%, rgba(255, 224, 198, 0.72), transparent 28rem),
-        radial-gradient(ellipse at 78% 92%, rgba(222, 252, 198, 0.72), transparent 30rem),
-        #f8f6ff;
+        radial-gradient(var(--dots) 1.7px, transparent 1.9px) 0 0 / 17px 17px,
+        var(--bg);
 }
 
 .app:has(#join:not([hidden])) {
@@ -36,31 +33,58 @@ body:has(#join:not([hidden])) {
     gap: 24px;
 }
 
-/* Wordmark */
-/* Cursive arcade wordmark */
+/* Match the outlined game-page wordmark and stickers */
 .app:has(#join:not([hidden]))>h1 {
     position: relative;
     isolation: isolate;
-    margin: 0;
-    color: var(--arcade-night);
+    margin: 0 0 18px;
+    color: var(--t0);
     font-family: "Pacifico", cursive;
     font-size: clamp(3rem, 8vw, 5rem);
-    font-weight: 300;
-    line-height: 1.1;
+    font-weight: 400;
+    line-height: 1;
     letter-spacing: 0;
     text-align: center;
-    text-shadow: 0 5px 0 rgba(190, 171, 254, 0.72);
+    -webkit-text-stroke: 3px var(--ink);
+    paint-order: stroke fill;
+    text-shadow: 5px 5px 0 var(--ink);
 }
-
 
 .app:has(#join:not([hidden]))>h1::after {
     content: "A tiny game of big words";
-    display: block;
-    margin-top: 14px;
-    color: var(--arcade-muted);
-    font: 500 clamp(.88rem, 2vw, 1.05rem)/1.4 var(--f-body);
-    letter-spacing: .015em;
+    display: table;
+    margin: 14px auto 0;
+    padding: 3px 16px;
+    background: var(--sticker-yellow);
+    border: 3px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: 3px 3px 0 var(--ink);
+    color: var(--ink);
+    font: 800 .78rem/1.4 var(--f-body);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    -webkit-text-stroke: 0;
     text-shadow: none;
+    transform: rotate(-2deg);
+}
+
+.app:has(#join:not([hidden]))>h1::before {
+    content: "GO!";
+    position: absolute;
+    right: -104px;
+    top: -4px;
+    display: grid;
+    place-items: center;
+    width: 82px;
+    height: 82px;
+    background: var(--sticker-cyan);
+    color: var(--ink);
+    font: 800 1.15rem/1 var(--f-body);
+    -webkit-text-stroke: 0;
+    text-shadow: none;
+    transform: rotate(12deg);
+    z-index: -1;
+    clip-path: polygon(50% 0, 61% 20%, 82% 11%, 79% 34%, 100% 42%, 82% 58%, 92% 80%, 68% 77%, 58% 100%, 45% 80%, 22% 92%, 24% 68%, 0 55%, 20% 42%, 10% 20%, 33% 24%);
 }
 
 /* Join/create card */
@@ -69,13 +93,10 @@ body:has(#join:not([hidden])) {
     max-width: none;
     gap: 20px;
     padding: clamp(22px, 5vw, 34px);
-    border: 1px solid rgba(200, 184, 255, .72);
-    border-radius: 28px;
-    background: rgba(255, 254, 254, 0.94);
-    box-shadow:
-        0 24px 70px rgba(54, 45, 99, .12),
-        0 5px 0 rgba(200, 184, 255, .42);
-    backdrop-filter: blur(12px);
+    border: 3px solid var(--ink);
+    border-radius: 22px;
+    background: var(--paper);
+    box-shadow: 5px 5px 0 var(--ink);
     animation: lobby-arrive .45s cubic-bezier(.2, .8, .2, 1) both;
 }
 
@@ -84,7 +105,7 @@ body:has(#join:not([hidden])) {
 }
 
 #join .field label {
-    color: #625c82;
+    color: var(--ink);
     font-size: .76rem;
     font-weight: 800;
     letter-spacing: .11em;
@@ -94,24 +115,24 @@ body:has(#join:not([hidden])) {
 #join .field select {
     min-height: 52px;
     padding: 12px 14px;
-    border: 1.5px solid var(--arcade-line);
-    border-radius: 14px;
+    border: 2px solid var(--ink);
+    border-radius: 10px;
     background: #fff;
     color: var(--arcade-night);
     font: 500 1rem/1.4 var(--f-body);
-    box-shadow: 0 2px 0 rgba(32, 36, 63, .025);
+    box-shadow: 2px 2px 0 var(--ink);
     transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
 }
 
 #join .field input::placeholder {
-    color: #aaa5bd;
+    color: var(--muted);
 }
 
 #join .field input:focus,
 #join .field select:focus {
-    border-color: var(--arcade-purple);
+    border-color: var(--t1);
     outline: none;
-    box-shadow: 0 0 0 4px rgba(200, 184, 255, .35);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--t1) 35%, transparent);
 }
 
 #join #code {
@@ -125,9 +146,9 @@ body:has(#join:not([hidden])) {
     grid-template-columns: 1fr 1fr;
     gap: 8px;
     padding: 6px;
-    border: 1px solid #ece7f7;
-    border-radius: 17px;
-    background: #f2effb;
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    background: #eef7e6;
 }
 
 #join .mode {
@@ -139,28 +160,28 @@ body:has(#join:not([hidden])) {
     display: grid;
     place-items: center;
     padding: 10px 8px;
-    border: 1.5px solid transparent;
-    border-radius: 12px;
-    color: #77718e;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    color: var(--muted);
     font-size: .92rem;
     transition: background .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease;
 }
 
 #join .mode input:checked+span {
-    border-color: var(--arcade-night);
-    background: var(--arcade-night);
+    border-color: var(--ink);
+    background: var(--t0);
     color: #fff;
-    box-shadow: 0 3px 0 rgba(32, 36, 63, .18);
+    box-shadow: 3px 3px 0 var(--ink);
 }
 
 #join .mode input:focus-visible+span {
-    outline: 3px solid var(--arcade-purple);
+    outline: 3px solid var(--t1);
     outline-offset: 3px;
 }
 
 #join .mode:has(input:not(:checked)):hover span {
-    background: rgba(255, 255, 255, .8);
-    color: var(--arcade-night);
+    background: #fff;
+    color: var(--ink);
 }
 
 /* Helpful hint under the player-count dropdown */
@@ -174,15 +195,15 @@ body:has(#join:not([hidden])) {
 #join #goBtn {
     position: relative;
     width: 100%;
-    min-height: 56px;
-    padding: 14px 20px;
-    border: 2px solid var(--arcade-night);
-    border-radius: 16px;
-    background: var(--arcade-purple);
+    min-height: 50px;
+    padding: 12px 20px;
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    background: var(--t0);
     color: #fff;
     font: 800 1rem/1.2 var(--f-body);
     letter-spacing: .01em;
-    box-shadow: 0 5px 0 var(--arcade-night);
+    box-shadow: 4px 4px 0 var(--ink);
     transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
 }
 
@@ -190,17 +211,17 @@ body:has(#join:not([hidden])) {
     opacity: 1;
     filter: brightness(1.04);
     transform: translateY(-2px);
-    box-shadow: 0 7px 0 var(--arcade-night);
+    box-shadow: 5px 5px 0 var(--ink);
 }
 
 #join #goBtn:active {
-    transform: translateY(3px);
-    box-shadow: 0 2px 0 var(--arcade-night);
+    transform: translate(3px, 3px);
+    box-shadow: 1px 1px 0 var(--ink);
 }
 
 #join #goBtn:focus-visible,
 #rejoinBox .btn:focus-visible {
-    outline: 3px solid #f09abb;
+    outline: 3px solid #f0b49a;
     outline-offset: 4px;
 }
 
@@ -221,24 +242,25 @@ body:has(#join:not([hidden])) {
     max-width: none;
     gap: 12px;
     padding: 22px;
-    border: 1px solid rgba(200, 184, 255, .72);
+    border: 3px solid var(--ink);
     border-radius: 22px;
-    background: var(--arcade-paper);
-    box-shadow: 0 18px 50px rgba(54, 45, 99, .1);
+    background: var(--paper);
+    box-shadow: 5px 5px 0 var(--ink);
 }
 
 #rejoinBox .btn {
     min-height: 48px;
-    border: 2px solid var(--arcade-night);
-    border-radius: 14px;
+    border: 3px solid var(--ink);
+    border-radius: 12px;
     background: var(--arcade-mint);
     color: var(--arcade-night);
-    box-shadow: 0 4px 0 var(--arcade-night);
+    box-shadow: 4px 4px 0 var(--ink);
 }
 
 #rejoinBox .btn:hover {
     opacity: 1;
-    transform: translateY(-1px);
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0 var(--ink);
 }
 
 /* Waiting room: matching card, code badge and player chips */
@@ -247,10 +269,10 @@ body:has(#join:not([hidden])) {
     max-width: none;
     gap: 16px;
     padding: clamp(20px, 4vw, 30px);
-    border: 1px solid rgba(200, 184, 255, .72);
-    border-radius: 24px;
-    background: rgba(255, 250, 255, .96);
-    box-shadow: 0 20px 60px rgba(54, 45, 99, .1);
+    border: 3px solid var(--ink);
+    border-radius: 22px;
+    background: var(--paper);
+    box-shadow: 5px 5px 0 var(--ink);
 }
 
 #waiting h2 {
@@ -260,10 +282,10 @@ body:has(#join:not([hidden])) {
 
 #waiting .code {
     padding: 8px 14px;
-    border: 1px dashed #a99ae9;
-    border-radius: 12px;
-    background: #f0ebff;
-    color: #5744b6;
+    border: 3px solid var(--ink);
+    border-radius: 9px;
+    background: var(--sticker-yellow);
+    color: var(--ink);
     font-size: 1.7rem;
     letter-spacing: .18em;
 }
@@ -271,31 +293,16 @@ body:has(#join:not([hidden])) {
 #waiting li {
     min-height: 56px;
     padding: 9px 12px;
-    border: 1px solid #ece7f7;
-    border-radius: 14px;
+    border: 3px solid var(--ink);
+    border-radius: 13px;
     background: #fff;
-}
-
-#waiting li:nth-child(4n + 1) {
-    background: #f1edff;
-}
-
-#waiting li:nth-child(4n + 2) {
-    background: #fff0f5;
-}
-
-#waiting li:nth-child(4n + 3) {
-    background: #eafaf4;
-}
-
-#waiting li:nth-child(4n + 4) {
-    background: #fff7df;
+    box-shadow: 3px 3px 0 var(--ink);
 }
 
 #waiting li .badge {
     width: 40px;
     height: 40px;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, .95), 0 0 0 3px #e0d8f4;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--ink);
 }
 
 @keyframes lobby-arrive {
@@ -313,20 +320,18 @@ body:has(#join:not([hidden])) {
 @media (max-width: 520px) {
     .app:has(#join:not([hidden])) {
         width: min(100% - 24px, 1080px);
-        padding-top: 52px;
-        gap: 22px;
+        padding-top: 32px;
+        gap: 18px;
     }
 
     .app:has(#join:not([hidden]))>h1::before {
-        top: -22px;
-        right: -20px;
-        font-size: 1.5rem;
+        display: none;
     }
 
     #join.join {
         padding: 22px 18px;
         gap: 18px;
-        border-radius: 22px;
+        border-radius: 18px;
     }
 
     #join .mode span {
@@ -335,10 +340,8 @@ body:has(#join:not([hidden])) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    #join.join {
-        animation: none;
-    }
-
+    #join.join,
+    #rejoinBox .btn,
     #join .field input,
     #join .field select,
     #join .mode span,

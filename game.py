@@ -7,6 +7,7 @@ from typing import Optional
 # (row change, column change) for the eight directions a word can run in.
 DIRS = [(0, 1), (1, 0), (1, 1), (-1, 1), (0, -1), (-1, 0), (-1, -1), (1, -1)]
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+BOARD_SIZE = 13
 
 WORD_SETS = {
     "animals": ["TIGER", "ZEBRA", "OTTER", "FALCON", "PANDA", "LEMUR", "BADGER", "GIRAFFE"],
@@ -17,7 +18,6 @@ WORD_SETS = {
 
 VALID_SIZES = (1, 2, 3, 4, 6, 8)
 AVATAR_COUNT = 8  # the page draws 8 characters; each player in a room gets a different one
-START_MESSAGE = "Find the words. Arrows move, Space picks a letter."
 
 
 def layout(capacity):
@@ -47,7 +47,7 @@ def _place(grid, word, size, rng):
     return False
 
 
-def make_grid(words, size=12, rng=None):
+def make_grid(words, size=BOARD_SIZE, rng=None):
     """Return a size x size grid (list of rows) with every word hidden in it."""
     rng = rng or random.Random()
     size = max(size, max(len(w) for w in words))
@@ -120,11 +120,10 @@ class Room:
         self.round += 1
         self.theme = self.rng.choice(list(WORD_SETS))
         self.words = list(WORD_SETS[self.theme])
-        self.grid = make_grid(self.words, 12, self.rng)
+        self.grid = make_grid(self.words, BOARD_SIZE, self.rng)
         self.size = len(self.grid)
         self.spots = {w: occurrences(self.grid, w) for w in self.words}  # server only
         self.found = [{} for _ in range(self.team_count)]  # per team: word -> {"cells": [[r, c], ...]}
-        self.messages = [START_MESSAGE] * self.team_count
         self.finished_at = [None] * self.team_count  # seconds from the start
         self.winner = None
         self.t0 = self.clock()
@@ -243,7 +242,6 @@ class Room:
             used.update(cells)
         for q in teammates:
             q.picked = [c for c in q.picked if c not in used]
-        self.messages[p.team] = f"{p.name} found {', '.join(w for w, _ in done)}."
         if len(found) == len(self.words):
             self.finished_at[p.team] = self.clock() - self.t0
             self.winner = p.team
@@ -295,5 +293,4 @@ class Room:
             "winner": self.winner,
             "over": self.over,
             "elapsed": round(self.elapsed(), 1),
-            "message": self.messages[team] if team is not None else START_MESSAGE,
         }

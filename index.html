@@ -408,7 +408,7 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(var(--n, 12), 1fr);
+            grid-template-columns: repeat(var(--n, 13), 1fr);
             aspect-ratio: 1;
             width: 100%;
             background: var(--paper);
@@ -424,7 +424,7 @@
             place-items: center;
             font-family: var(--f-mono);
             font-weight: 600;
-            font-size: calc(100cqw / var(--n, 12) * 0.5);
+            font-size: calc(100cqw / var(--n, 13) * 0.5);
             line-height: 1;
             box-shadow: inset 0 0 0 0.5px var(--line);
         }
@@ -472,8 +472,8 @@
             position: absolute;
             left: 0;
             top: 0;
-            width: calc(100% / var(--n, 12));
-            height: calc(100% / var(--n, 12));
+            width: calc(100% / var(--n, 13));
+            height: calc(100% / var(--n, 13));
             transform: translate(calc(var(--c, 0) * 100%), calc(var(--r, 0) * 100%));
             transition: transform 0.14s ease-out;
             z-index: 1;
@@ -534,7 +534,6 @@
             }
         }
 
-
         /* 3D board (Three.js). The flat grid above stays as a fallback when WebGL is not available. */
         .stage.gl {
             max-width: 760px;
@@ -549,6 +548,37 @@
             display: block;
             width: 100%;
             height: auto;
+            filter: drop-shadow(0 4px 0 rgba(23, 19, 31, 0.14));
+        }
+
+        .info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            background: var(--paper);
+            border: 2px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 14px;
+        }
+
+        .info .lab {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .info .code {
+            font-size: 1.2rem;
+        }
+
+        .info .timer {
+            font-size: 1.15rem;
+            line-height: 1.25;
         }
 
         .side {
@@ -703,21 +733,19 @@
             font: 800 1.4rem/1.15 var(--f-display);
         }
     </style>
-
     <link rel="stylesheet" href="/static/lobby.css">
+    <link rel="stylesheet" href="/static/game.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 
 <body>
     <main class="app">
         <h1>Word&nbsp;&nbsp;Duel</h1>
-
         <div class="rejoin" id="rejoinBox" hidden>
             <strong id="rejoinText"></strong>
             <button class="btn" type="button" id="rejoinBtn">Rejoin game</button>
             <p class="hint">Shown because you left a game that is still running.</p>
         </div>
-
         <form class="join" id="join">
             <div class="field">
                 <label for="name">Your name</label>
@@ -748,31 +776,20 @@
             <p class="err" id="joinErr" role="alert"></p>
             <button class="btn" type="submit" id="goBtn">Create room</button>
         </form>
-
         <section id="game" hidden>
-            <div class="bar">
-                <span>Room <span class="code" id="roomCode"></span></span>
-                <span class="hint">Share this code with the other players.</span>
-                <span class="timer" id="timerWrap" hidden>Time <span id="timer">0:00</span></span>
-            </div>
             <p class="err" id="connMsg" role="status"></p>
-
             <div class="waiting" id="waiting" hidden>
                 <h2>Waiting for players <span id="wCount"></span></h2>
                 <span class="code" id="wCode"></span>
                 <ul id="wList"></ul>
                 <p class="hint" id="wMode"></p>
             </div>
-
             <div class="board" id="board" hidden>
                 <div class="main" id="mainCol">
-                    <p class="msg" id="msg" aria-live="polite"></p>
-                    <div class="roster" id="roster"></div>
                     <div class="stage" id="stage">
                         <div class="grid" id="grid" aria-label="Letter grid"></div>
                         <div class="pawns" id="pawns" aria-hidden="true"></div>
                     </div>
-                    <p class="picked" id="picked" aria-live="polite"></p>
                     <p class="keys"><kbd>Arrows</kbd> move &nbsp; <kbd>Space</kbd> pick or deselect the letter you are
                         on. A word counts once all its letters are picked &nbsp; <kbd>Esc</kbd> clears all</p>
                     <div class="result" id="result" hidden>
@@ -781,6 +798,11 @@
                     </div>
                 </div>
                 <aside class="side">
+                    <div class="info">
+                        <div><span class="lab">Room</span><span class="code" id="roomCode"></span></div>
+                        <div id="timerWrap" hidden><span class="lab">Time</span><span class="timer"
+                                id="timer">0:00</span></div>
+                    </div>
                     <div class="teams" id="teams"></div>
                     <div class="words">
                         <h2>Words to find <span id="left"></span></h2>
@@ -790,141 +812,16 @@
             </div>
         </section>
     </main>
-
+    <script src="/static/avatars.js"></script>
     <script>
-        /* ---------- the eight characters ----------
-           Original round-badge characters drawn in code. The server gives every player
-           in a room a different number from 0 to 7. */
-        const INK = '#1d1b2e';
-        const ST = `stroke="${INK}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"`;
-        const LINE = (d, w = 2.2) => `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
-        const eyeDot = (x, y, r = 4.2) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${INK}"/><circle cx="${x + r * 0.35}" cy="${y - r * 0.4}" r="${r * 0.34}" fill="#fff"/>`;
-        const blush = (x, y) => `<ellipse cx="${x}" cy="${y}" rx="5.2" ry="3" fill="#ff6b8e" opacity=".5"/>`;
-        const smile = (x, y, w = 9) => LINE(`M${x - w / 2} ${y} q${w / 2} ${w * 0.7} ${w} 0`);
-        function star(cx, cy, ro, ri, fill) {
-            const pts = [];
-            for (let i = 0; i < 10; i++) {
-                const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? ri : ro;
-                pts.push((cx + r * Math.cos(a)).toFixed(1) + ',' + (cy + r * Math.sin(a)).toFixed(1));
-            }
-            return `<polygon points="${pts.join(' ')}" fill="${fill}" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round"/>`;
-        }
-        // Shoulders whose lower edge follows the badge circle, so nothing sticks out of it.
-        function torso(y, fill) {
-            const dx = Math.sqrt(48 * 48 - (y - 50) * (y - 50));
-            const x1 = (50 - dx).toFixed(1), x2 = (50 + dx).toFixed(1);
-            return `<path d="M${x1} ${y} Q50 ${y - 16} ${x2} ${y} A48 48 0 0 1 ${x1} ${y} Z" fill="${fill}" ${ST}/>`;
-        }
-        const badge = (bg, inner) =>
-            `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">` +
-            `<circle cx="50" cy="50" r="48.5" fill="${bg}"/>${inner}` +
-            `<circle cx="50" cy="50" r="48.5" fill="none" stroke="${INK}" stroke-width="3"/></svg>`;
-
-        const AVATARS = [
-            {
-                name: 'Moon alien', svg: badge('#c8f2dc',
-                    torso(82, '#7c6cf0') +
-                    LINE('M38 24 Q33 10 26 9') + `<circle cx="26" cy="9" r="4" fill="#ffd166" ${ST}/>` +
-                    LINE('M62 24 Q67 10 74 9') + `<circle cx="74" cy="9" r="4" fill="#ffd166" ${ST}/>` +
-                    `<ellipse cx="50" cy="46" rx="27" ry="28" fill="#86e08a" ${ST}/>` +
-                    `<ellipse cx="50" cy="42" rx="14" ry="12" fill="#fff" ${ST}/>` +
-                    `<circle cx="50" cy="43" r="7.5" fill="${INK}"/><circle cx="53" cy="40" r="2.6" fill="#fff"/>` +
-                    blush(33, 58) + blush(67, 58) + smile(50, 60, 12))
-            },
-            {
-                name: 'Little wizard', svg: badge('#ffe9a8',
-                    torso(82, '#4a49b8') +
-                    `<circle cx="29" cy="56" r="8" fill="#8a5a3c" ${ST}/><circle cx="71" cy="56" r="8" fill="#8a5a3c" ${ST}/>` +
-                    `<circle cx="50" cy="56" r="22" fill="#ffdcbc" ${ST}/>` +
-                    eyeDot(42, 58) + eyeDot(58, 58) + blush(35, 65) + blush(65, 65) + smile(50, 66, 8) +
-                    `<ellipse cx="50" cy="42" rx="30" ry="8" fill="#6a4fd8" ${ST}/>` +
-                    `<path d="M28 41 Q44 30 54 7 Q60 28 72 41 Q50 47 28 41 Z" fill="#7b5ff0" ${ST}/>` +
-                    star(52, 28, 6.5, 2.8, '#ffd166'))
-            },
-            {
-                name: 'Warrior', svg: badge('#ffd0cc',
-                    torso(82, '#8f9bb3') + `<path d="M38 74 Q50 82 62 74 L60 84 L40 84 Z" fill="#d6453d" ${ST}/>` +
-                    `<circle cx="50" cy="58" r="21" fill="#f3c9a1" ${ST}/>` +
-                    eyeDot(42, 60) + eyeDot(58, 60) + LINE('M37 55 l6 1.5') + LINE('M63 55 l-6 1.5') +
-                    blush(36, 67) + blush(64, 67) + LINE('M45 70 q5 3 10 0') + LINE('M60 62 l4 6', 1.8) +
-                    `<path d="M44 26 Q50 4 68 9 Q57 14 59 27 Z" fill="#d6453d" ${ST}/>` +
-                    `<path d="M28 54 Q27 24 50 24 Q73 24 72 54 L65 54 Q50 44 35 54 Z" fill="#aab4c8" ${ST}/>` +
-                    `<path d="M28 52 L36 52 L35 69 Q30 66 27 58 Z" fill="#8f9bb3" ${ST}/><path d="M72 52 L64 52 L65 69 Q70 66 73 58 Z" fill="#8f9bb3" ${ST}/>` +
-                    `<rect x="48" y="44" width="4" height="17" rx="1.5" fill="#8f9bb3" ${ST}/>` +
-                    `<path d="M32 36 Q50 28 68 36" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>`)
-            },
-            {
-                name: 'Witch', svg: badge('#ffdcb8',
-                    torso(82, '#3b2a63') + `<path d="M42 74 Q50 80 58 74 L56 82 L44 82 Z" fill="#ff8a3d" ${ST}/>` +
-                    `<path d="M28 52 Q20 66 26 80 Q34 72 33 58 Z" fill="#ff8a3d" ${ST}/><path d="M72 52 Q80 66 74 80 Q66 72 67 58 Z" fill="#ff8a3d" ${ST}/>` +
-                    `<circle cx="50" cy="57" r="22" fill="#ffe0c7" ${ST}/>` +
-                    eyeDot(42, 59) + eyeDot(58, 59) + LINE('M37 54 l-3 -2') + LINE('M63 54 l3 -2') +
-                    blush(35, 66) + blush(65, 66) + smile(50, 67, 8) +
-                    `<ellipse cx="50" cy="43" rx="33" ry="8.5" fill="#2d2a4a" ${ST}/>` +
-                    `<path d="M32 42 Q44 32 48 18 Q50 10 62 6 Q58 16 60 24 Q66 34 69 42 Q50 49 32 42 Z" fill="#3a3560" ${ST}/>` +
-                    `<path d="M33 40 Q50 47 68 40 L69 44 Q50 51 32 44 Z" fill="#ff8a3d" ${ST}/>` +
-                    `<rect x="45" y="40" width="10" height="8" rx="1.5" fill="#ffd166" ${ST}/>`)
-            },
-            {
-                name: 'Fox', svg: badge('#d4eed1',
-                    torso(82, '#3b6fe0') +
-                    `<path d="M24 48 L21 17 L45 32 Z" fill="#ff9442" ${ST}/><path d="M76 48 L79 17 L55 32 Z" fill="#ff9442" ${ST}/>` +
-                    `<path d="M28 40 L26 25 L38 33 Z" fill="#4a2c2a"/><path d="M72 40 L74 25 L62 33 Z" fill="#4a2c2a"/>` +
-                    `<ellipse cx="50" cy="54" rx="28" ry="23" fill="#ff9442" ${ST}/>` +
-                    `<path d="M24 58 Q32 74 50 74 Q68 74 76 58 Q64 56 50 64 Q36 56 24 58 Z" fill="#fff" ${ST}/>` +
-                    `<ellipse cx="50" cy="63" rx="4.2" ry="3" fill="${INK}"/>` +
-                    eyeDot(38, 52) + eyeDot(62, 52) + blush(31, 61) + blush(69, 61))
-            },
-            {
-                name: 'Panda', svg: badge('#ffd7e6',
-                    torso(82, '#6fbf73') +
-                    `<circle cx="27" cy="31" r="10" fill="#2a2840" ${ST}/><circle cx="73" cy="31" r="10" fill="#2a2840" ${ST}/>` +
-                    `<ellipse cx="50" cy="52" rx="28" ry="24" fill="#fff" ${ST}/>` +
-                    `<ellipse cx="38" cy="50" rx="7.5" ry="9.5" fill="#2a2840" transform="rotate(20 38 50)"/>` +
-                    `<ellipse cx="62" cy="50" rx="7.5" ry="9.5" fill="#2a2840" transform="rotate(-20 62 50)"/>` +
-                    `<circle cx="38.5" cy="50" r="3.2" fill="#fff"/><circle cx="38.8" cy="50.3" r="1.6" fill="${INK}"/>` +
-                    `<circle cx="61.5" cy="50" r="3.2" fill="#fff"/><circle cx="61.8" cy="50.3" r="1.6" fill="${INK}"/>` +
-                    `<ellipse cx="50" cy="60" rx="5" ry="3.6" fill="#2a2840"/>` +
-                    LINE('M50 63.5 V66') + LINE('M44 67 q6 5 12 0') + blush(30, 62) + blush(70, 62))
-            },
-            {
-                name: 'Pirate', svg: badge('#e0d6ff',
-                    torso(82, '#2f4b8a') + `<path d="M40 73 L50 84 L60 73 Z" fill="#eef0f8" ${ST}/>` +
-                    `<circle cx="50" cy="55" r="23" fill="#f3c9a1" ${ST}/>` +
-                    eyeDot(40, 57) + `<ellipse cx="62" cy="56" rx="8" ry="7" fill="${INK}"/>` + LINE('M54 53 L30 46') +
-                    blush(34, 65) + smile(50, 66, 14) +
-                    `<circle cx="27" cy="64" r="2.8" fill="none" stroke="#ffc233" stroke-width="2"/>` +
-                    `<path d="M72 44 q13 -3 15 9 q-9 -5 -15 -3 Z" fill="#e5484d" ${ST}/>` +
-                    `<path d="M26 49 Q50 14 74 49 Q50 39 26 49 Z" fill="#e5484d" ${ST}/>` +
-                    `<circle cx="40" cy="40" r="2" fill="#fff"/><circle cx="50" cy="36" r="2" fill="#fff"/><circle cx="60" cy="40" r="2" fill="#fff"/>`)
-            },
-            {
-                name: 'Astronaut', svg: badge('#cbc3ff',
-                    torso(82, '#f4f6ff') + `<rect x="41" y="83" width="18" height="9" rx="3" fill="#ff6b6b" ${ST}/>` +
-                    LINE('M70 22 L75 15') + `<circle cx="76" cy="13" r="3.4" fill="#ff6b6b" ${ST}/>` +
-                    `<circle cx="50" cy="46" r="29" fill="#f4f6ff" ${ST}/>` +
-                    `<circle cx="21" cy="46" r="3.6" fill="#ffb347" ${ST}/><circle cx="79" cy="46" r="3.6" fill="#ffb347" ${ST}/>` +
-                    `<ellipse cx="50" cy="47" rx="21" ry="18" fill="#8fd3ff" ${ST}/>` +
-                    `<circle cx="50" cy="50" r="12" fill="#ffdcbc"/>` +
-                    eyeDot(45.5, 50, 2.6) + eyeDot(54.5, 50, 2.6) + smile(50, 55.5, 6) +
-                    LINE('M36 40 Q40 31 50 30', 3).replace(INK, '#fff'))
-            },
-        ];
-        const badgeEl = (i, extra) => {
-            const d = document.createElement('div');
-            d.className = 'badge' + (extra ? ' ' + extra : '');
-            d.title = AVATARS[i % AVATARS.length].name;
-            d.innerHTML = AVATARS[i % AVATARS.length].svg;
-            return d;
-        };
-
+        /* ---------- avatar module ---------- */
+        const { AVATARS, badgeEl } = window.WordDuelAvatars;
         /* ---------- helpers ---------- */
         const $ = id => document.getElementById(id);
-        const TEAM_NAMES = ['Indigo', 'Amber', 'Teal', 'Rose'];
+        const TEAM_NAMES = ['Pink', 'Blue', 'Green', 'Purple'];
         let notice = '';  // a standing note under the room code, such as why 3D is off
         let ws = null, S = null, builtRound = -1, cells = [], waitingIds = new Set();
         const pawns = new Map();  // player id -> the character's element on the board
-
         function el(tag, cls, text) {
             const e = document.createElement(tag);
             if (cls) e.className = cls;
@@ -935,16 +832,13 @@
             sec = Math.max(0, Math.floor(sec));
             return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
         }
-
         function modeText(n) {
             if (n === 1) return 'Solo. Find every word on your own.';
             if (n < 4) return 'Everyone plays alone on their own board, racing to find all the words first.';
             return `Teams of 2. Each team has its own board with the same words.`;
         }
-
         /* ---------- lobby ---------- */
         try { $('name').value = localStorage.getItem('wd-name') || ''; } catch (err) { }
-
         function currentMode() { return document.querySelector('input[name=mode]:checked').value; }
         function updateLobby() {
             const create = currentMode() === 'create';
@@ -957,7 +851,6 @@
         document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', updateLobby));
         $('size').addEventListener('change', updateLobby);
         updateLobby();
-
         /* ---------- connecting, and coming back ----------
            The server gives every player a secret token. It is kept in this tab's sessionStorage, so
            a refresh or a dropped connection can take the same seat (same team, avatar and picks). */
@@ -967,7 +860,6 @@
         function saveSession() { try { sessionStorage.setItem('wd-session', JSON.stringify(session)); } catch (err) { } }
         function clearSession() { session = null; try { sessionStorage.removeItem('wd-session'); } catch (err) { } }
         const rejoinUrl = x => `${wsBase()}/join/${x.code}?name=${encodeURIComponent(x.name)}&rejoin=${encodeURIComponent(x.token)}`;
-
         $('join').addEventListener('submit', e => {
             e.preventDefault();
             const name = $('name').value.trim() || 'Player';
@@ -981,7 +873,6 @@
                 connect(`${wsBase()}/join/${code}?${q}`, name);
             }
         });
-
         // After a refresh: offer to take the seat back.
         {
             const old = loadSession();
@@ -992,7 +883,6 @@
                 $('rejoinBtn').addEventListener('click', () => { gaveUp = false; connect(rejoinUrl(old), old.name); });
             }
         }
-
         function connect(url, name) {
             $('joinErr').textContent = '';
             clearTimeout(retryTimer);
@@ -1031,10 +921,7 @@
                 }
             };
         }
-
         function send(obj) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); }
-
-
         /* ---------- 3D board (Three.js) ----------
            A raised board with keycap tiles. Picked tiles press down, found words rise in your
            team colour, and the characters stand on coloured pedestals. If Three.js or WebGL is
@@ -1045,7 +932,6 @@
             let col = {}, colKey = '', lastW = 0, sideMat, slabMat, topGeo, flatGeo;
             const letterCache = new Map(), avCache = new Map();
             const rm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-
             function readColours() {
                 const root = getComputedStyle(document.documentElement), main = getComputedStyle($('mainCol'));
                 const g = (cs, n, d) => cs.getPropertyValue(n).trim() || d;
@@ -1060,12 +946,11 @@
                 for (const k in raw) col[k] = new THREE.Color(raw[k]);
                 return changed;
             }
-
             function paintLetter(e) {
                 const x = e.cv.getContext('2d');
                 x.clearRect(0, 0, 128, 128);
                 x.fillStyle = e.light ? '#ffffff' : col.raw.ink;
-                x.font = '600 84px "IBM Plex Mono", ui-monospace, Consolas, monospace';
+                x.font = '800 88px "Bricolage Grotesque", "DM Sans", sans-serif';
                 x.textAlign = 'center'; x.textBaseline = 'middle';
                 x.fillText(e.ch, 64, 70);
                 e.tex.needsUpdate = true;
@@ -1083,7 +968,6 @@
                 }
                 return e.mat;
             }
-
             // The SVG badge drawn onto a canvas, with a ring in the team colour.
             function avatarTex(i, ring, me) {
                 const key = i + '|' + ring + '|' + me;
@@ -1108,7 +992,6 @@
                     encodeURIComponent(AVATARS[i % AVATARS.length].svg.replace('<svg ', '<svg width="256" height="256" '));
                 return e;
             }
-
             api.init = function (host) {
                 api.tried = true;
                 if (typeof THREE === 'undefined') { api.why = 'Three.js did not load (no internet, or the CDN is blocked)'; return false; }
@@ -1131,24 +1014,22 @@
                 topGeo = new THREE.BoxGeometry(0.94, 0.5, 0.94);
                 flatGeo = new THREE.PlaneGeometry(0.8, 0.8);
                 if (window.ResizeObserver) new ResizeObserver(() => fit()).observe(stage);
-                if (document.fonts) document.fonts.load('600 84px "IBM Plex Mono"').then(() => letterCache.forEach(paintLetter)).catch(() => { });
+                if (document.fonts) document.fonts.load('800 88px "Bricolage Grotesque"').then(() => letterCache.forEach(paintLetter)).catch(() => { });
                 api.ready = true;
                 tick();
                 return true;
             };
-
             function fit() {
                 if (!R) return;
-                const w = Math.max(240, stage.clientWidth), h = Math.round(w * 0.82);
+                const w = Math.max(240, stage.clientWidth), h = Math.round(w * 0.76);
                 lastW = stage.clientWidth;
                 R.setSize(w, h, false);
                 cam.aspect = w / h;
-                const n = N || 12, d = n * 2.6, pitch = 56 * Math.PI / 180;
+                const n = N || 13, d = n * 2.6, pitch = 56 * Math.PI / 180;
                 cam.position.set(0, d * Math.sin(pitch), d * Math.cos(pitch) + n * 0.02);
-                cam.lookAt(0, -0.2, n * 0.02);
+                cam.lookAt(0, -0.2, n * 0.02 + 0.9);
                 cam.updateProjectionMatrix();
             }
-
             function buildBoard(S) {
                 if (group) {
                     scene.remove(group);
@@ -1162,9 +1043,19 @@
                 scene.add(group);
                 sideMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
                 slabMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
-                const slab = new THREE.Mesh(new THREE.BoxGeometry(N + 0.5, 0.5, N + 0.5), slabMat);
-                slab.position.y = -0.6;
+                const rim = 0.3;
+                const slab = new THREE.Mesh(new THREE.BoxGeometry(N + 2 * rim, 0.16, N + 2 * rim), slabMat);
+                slab.position.y = -0.58;
                 group.add(slab);
+                // a raised frame on all four sides, so the far (top) edge of the board has a border too
+                const bar = (w, d, x, z) => {
+                    const m = new THREE.Mesh(new THREE.BoxGeometry(w, 0.5, d), slabMat);
+                    m.position.set(x, -0.25, z);
+                    group.add(m);
+                };
+                const mid = N / 2 + rim / 2;
+                bar(N + 2 * rim, rim, 0, -mid); bar(N + 2 * rim, rim, 0, mid);
+                bar(rim, N, -mid, 0); bar(rim, N, mid, 0);
                 tiles = [];
                 const half = (N - 1) / 2;
                 for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
@@ -1182,23 +1073,19 @@
                 }
                 fit();
             }
-
             function recolour() {
                 sideMat.color.copy(col.paper).lerp(col.ink, 0.38);
-                slabMat.color.copy(col.ink.getHSL({}).l > 0.5 ? col.line : col.ink);  // a dark slab in both themes
+                slabMat.color.copy(col.paper).lerp(col.ink, 0.16);
                 letterCache.forEach(paintLetter);
                 pawns3.forEach(pw => pw.ped.material.color.copy(col.tc));
             }
-
             const mix = (a, b, t) => new THREE.Color().copy(a).lerp(b, t);
-
             api.update = function (S, states) {
                 if (!api.ready) return;
                 const changed = readColours();
                 if (S.round !== round3 || S.size !== N) { buildBoard(S); recolour(); }
                 else if (changed) recolour();
                 if (stage.clientWidth !== lastW) fit();
-
                 for (let k = 0; k < tiles.length; k++) {
                     const t = tiles[k], st = states[k];
                     let top, h = 0, light = false;
@@ -1212,7 +1099,6 @@
                     if (rm) t.cur = h;
                     if (t.light !== light) { t.light = light; t.letter.material = letterMat(t.ch, light); }
                 }
-
                 const ids = new Set(S.players.map(p => p.id));
                 pawns3.forEach((pw, id) => { if (!ids.has(id)) { scene.remove(pw.g); pawns3.delete(id); } });
                 const half = (N - 1) / 2, inCell = {};
@@ -1249,7 +1135,6 @@
                     }
                 });
             };
-
             function tick() {
                 requestAnimationFrame(tick);
                 if (!N || !stage.offsetParent) return;  // nothing to draw while the board is hidden
@@ -1268,21 +1153,18 @@
             }
             return api;
         })();
-
         /* ---------- drawing ---------- */
         function teamLabel(t) {
             if (S.mode === 'teams') return TEAM_NAMES[t] + ' team';
             const m = S.teams[t].members;
             return m.length ? m[0].name : TEAM_NAMES[t];
         }
-
         function updateTimer() {
             if (!S || !S.started) return;
             const t = S.over ? S.elapsed : S.elapsed + (performance.now() - S.recv) / 1000;
             $('timer').textContent = fmt(t);
         }
         setInterval(updateTimer, 500);
-
         function renderWaiting() {
             $('wCount').textContent = `(${S.players.length} of ${S.capacity})`;
             $('wCode').textContent = S.code;
@@ -1296,7 +1178,6 @@
             S.players.forEach(p => waitingIds.add(p.id));
             $('wMode').textContent = modeText(S.capacity) + ' The game starts when the room is full.';
         }
-
         // The letters are built once per round; after that only their classes change.
         function buildGrid() {
             const grid = $('grid');
@@ -1314,14 +1195,12 @@
             pawns.clear();
             builtRound = S.round;
         }
-
         function hop(node) {
             const b = node.firstChild;
             b.classList.remove('hop');
             void b.offsetWidth;  // restart the animation
             b.classList.add('hop');
         }
-
         // Characters live in their own layer, so they slide from cell to cell instead of jumping.
         function syncPawns() {
             const layer = $('pawns');
@@ -1349,7 +1228,6 @@
                 node.style.setProperty('--o', Math.min(o, 3));
             });
         }
-
         function render() {
             $('roomCode').textContent = S.code;
             $('waiting').hidden = S.started;
@@ -1357,13 +1235,11 @@
             $('timerWrap').hidden = !S.started;
             if (!S.started) { renderWaiting(); return; }
             updateTimer();
-
             const n = S.size, mt = S.myTeam;
             $('mainCol').className = 'main t' + mt;  // passes your team's colour to the board, roster and message
             $('stage').style.setProperty('--n', n);
             if (!B3.tried) { B3.init($('stage')); if (!B3.ready) { notice = '3D view is off: ' + B3.why + '. Showing the flat board.'; $('connMsg').textContent = notice; } }
             if (S.round !== builtRound) buildGrid();
-
             // Only your own team's board is sent: its found words, its players and its picks.
             const foundCells = new Set();
             for (const f of S.found) for (const [r, c] of f.cells) foundCells.add(r * n + c);
@@ -1387,20 +1263,7 @@
             }
             syncPawns();
             B3.update(S, states);
-
-            const roster = $('roster');
-            roster.innerHTML = '';
-            S.players.forEach(p => {
-                const w = el('span', 'who' + (p.id === S.you ? ' me' : '') + (p.connected === false ? ' away' : ''));
-                w.append(badgeEl(p.avatar), document.createTextNode(p.name + (p.id === S.you ? ' (you)' : '') + (p.connected === false ? ' (away)' : '')));
-                roster.append(w);
-            });
-
-            $('msg').textContent = S.message;
             const letters = me ? me.picked.map(([r, c]) => S.grid[r][c]).join(' ') : '';
-            $('picked').textContent = (letters ? 'Your letters: ' + letters : 'Your letters: none yet') +
-                (me ? '   ·   Standing on ' + S.grid[me.r][me.c] : '');
-
             // Progress of every team. You see how many words the others have, not which ones.
             const teams = $('teams');
             teams.innerHTML = '';
@@ -1422,7 +1285,6 @@
                 if (T.done) box.append(el('span', 'done', 'Finished'));
                 teams.append(box);
             }
-
             const ul = $('wordList');
             ul.innerHTML = '';
             let left = 0;
@@ -1433,7 +1295,6 @@
                 ul.append(li);
             }
             $('left').textContent = left + ' left';
-
             $('result').hidden = !S.over;
             if (S.over) {
                 const time = fmt(S.elapsed);
@@ -1444,7 +1305,6 @@
                 $('resultText').textContent = text;
             }
         }
-
         /* ---------- keyboard ---------- */
         const MOVES = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
         document.addEventListener('keydown', e => {

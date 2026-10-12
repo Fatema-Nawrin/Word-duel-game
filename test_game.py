@@ -2,7 +2,7 @@ import random
 
 import pytest
 
-from game import AVATAR_COUNT, VALID_SIZES, WORD_SETS, Room, layout, make_grid, occurrences
+from game import AVATAR_COUNT, BOARD_SIZE, VALID_SIZES, WORD_SETS, Room, layout, make_grid, occurrences
 
 DIRS = [(0, 1), (1, 0), (1, 1), (-1, 1), (0, -1), (-1, 0), (-1, -1), (1, -1)]
 
@@ -46,13 +46,15 @@ def full_room(capacity, seed=1, clock=None):
 def test_every_word_is_in_the_grid():
     for words in WORD_SETS.values():
         for seed in range(20):
-            grid = make_grid(words, 12, random.Random(seed))
+            grid = make_grid(words, BOARD_SIZE, random.Random(seed))
+            assert len(grid) == BOARD_SIZE
+            assert all(len(row) == BOARD_SIZE for row in grid)
             for w in words:
                 assert find_word(grid, w), (w, seed)
 
 
 def test_occurrences_includes_the_hidden_word():
-    grid = make_grid(["OTTER"], 12, random.Random(1))
+    grid = make_grid(["OTTER"], BOARD_SIZE, random.Random(1))
     assert find_word(grid, "OTTER") in occurrences(grid, "OTTER")
 
 
@@ -75,6 +77,7 @@ def test_layout_for_each_room_size():
 def test_teams_for_each_room_size(capacity, teams, mode):
     room = full_room(capacity)
     assert room.started
+    assert room.size == BOARD_SIZE
     assert room.mode == mode
     assert [p.team for p in room.players.values()] == teams
     assert len(room.found) == max(teams) + 1  # one board per team
