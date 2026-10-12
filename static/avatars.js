@@ -11,9 +11,9 @@
     const ST = `stroke="${INK}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"`;
 
     const LINE = (d, w = 2.2) => `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
-
+    const bigEye = (x, y) => `<circle cx="${x}" cy="${y}" r="4.8" fill="${INK}"/><circle cx="${x + 1.7}" cy="${y - 1.9}" r="1.8" fill="#fff"/><circle cx="${x - 1.5}" cy="${y + 1.8}" r="0.9" fill="#fff"/>` + LINE(`M${x - 5} ${y - 3} q5 -4.5 10 0`, 1.8);
     const eyeDot = (x, y, r = 4.2) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${INK}"/><circle cx="${x + r * 0.35}" cy="${y - r * 0.4}" r="${r * 0.34}" fill="#fff"/>`;
-
+    const NERD_HAIR = '#2a2840';
     const blush = (x, y) => `<ellipse cx="${x}" cy="${y}" rx="5.2" ry="3" fill="#ff6b8e" opacity=".5"/>`;
 
     const smile = (x, y, w = 9) => LINE(`M${x - w / 2} ${y} q${w / 2} ${w * 0.7} ${w} 0`);
@@ -147,49 +147,36 @@
         },
 
         {
-
-            name: 'Fox', svg: badge('#d4eed1',
-
-                torso(82, '#3b6fe0') +
-
-                `<path d="M24 48 L21 17 L45 32 Z" fill="#ff9442" ${ST}/><path d="M76 48 L79 17 L55 32 Z" fill="#ff9442" ${ST}/>` +
-
-                `<path d="M28 40 L26 25 L38 33 Z" fill="#4a2c2a"/><path d="M72 40 L74 25 L62 33 Z" fill="#4a2c2a"/>` +
-
-                `<ellipse cx="50" cy="54" rx="28" ry="23" fill="#ff9442" ${ST}/>` +
-
-                `<path d="M24 58 Q32 74 50 74 Q68 74 76 58 Q64 56 50 64 Q36 56 24 58 Z" fill="#fff" ${ST}/>` +
-
-                `<ellipse cx="50" cy="63" rx="4.2" ry="3" fill="${INK}"/>` +
-
-                eyeDot(38, 52) + eyeDot(62, 52) + blush(31, 61) + blush(69, 61))
-
+            name: 'Shieldmaiden', svg: badge('#ffd9c2',
+                torso(82, '#a6764a') +
+                `<ellipse cx="24" cy="79" rx="10" ry="6.5" fill="#aab4c8" ${ST}/><ellipse cx="76" cy="79" rx="10" ry="6.5" fill="#aab4c8" ${ST}/>` +
+                `<circle cx="50" cy="85" r="3.4" fill="#ffc233" ${ST}/>` +
+                `<path d="M27 56 Q22 24 50 22 Q78 24 73 56 L72 70 Q50 62 28 70 Z" fill="#c0502d" ${ST}/>` +
+                `<ellipse cx="70" cy="71" rx="4.5" ry="5.5" fill="#c0502d" ${ST}/><ellipse cx="71" cy="77.5" rx="4.5" ry="5.5" fill="#c0502d" ${ST}/><ellipse cx="70" cy="84" rx="4.2" ry="5" fill="#c0502d" ${ST}/>` +
+                `<circle cx="70.5" cy="89.5" r="2.6" fill="#ffc233" ${ST}/>` +
+                `<circle cx="50" cy="57" r="21" fill="#f3c9a1" ${ST}/>` +
+                `<path d="M29 55 Q26 28 50 28 Q74 28 71 55 Q66 40 52 41 Q38 44 29 55 Z" fill="#c0502d" ${ST}/>` +
+                `<path d="M30 40 Q50 31 70 40 L69 45 Q50 36 31 45 Z" fill="#ffc233" ${ST}/>` +
+                `<circle cx="50" cy="38" r="2.6" fill="#e5484d" ${ST}/>` +
+                eyeDot(42, 59) + eyeDot(58, 59) +
+                LINE('M37.5 58 l-3 -2', 1.8) + LINE('M62.5 58 l3 -2', 1.8) +
+                LINE('M36 53 l8 2') + LINE('M64 53 l-8 2') +
+                `<path d="M46 67 Q50 71 54 67 Q50 68.4 46 67 Z" fill="#e5484d" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>` +
+                `<path d="M60 63 l5 2.5 M60 67 l5 2.5" fill="none" stroke="#d6453d" stroke-width="2" stroke-linecap="round"/>`)
         },
 
         {
-
-            name: 'Panda', svg: badge('#ffd7e6',
-
-                torso(82, '#6fbf73') +
-
-                `<circle cx="27" cy="31" r="10" fill="#2a2840" ${ST}/><circle cx="73" cy="31" r="10" fill="#2a2840" ${ST}/>` +
-
-                `<ellipse cx="50" cy="52" rx="28" ry="24" fill="#fff" ${ST}/>` +
-
-                `<ellipse cx="38" cy="50" rx="7.5" ry="9.5" fill="#2a2840" transform="rotate(20 38 50)"/>` +
-
-                `<ellipse cx="62" cy="50" rx="7.5" ry="9.5" fill="#2a2840" transform="rotate(-20 62 50)"/>` +
-
-                `<circle cx="38.5" cy="50" r="3.2" fill="#fff"/><circle cx="38.8" cy="50.3" r="1.6" fill="${INK}"/>` +
-
-                `<circle cx="61.5" cy="50" r="3.2" fill="#fff"/><circle cx="61.8" cy="50.3" r="1.6" fill="${INK}"/>` +
-
-                `<ellipse cx="50" cy="60" rx="5" ry="3.6" fill="#2a2840"/>` +
-
-                LINE('M50 63.5 V66') + LINE('M44 67 q6 5 12 0') + blush(30, 62) + blush(70, 62))
-
+            name: 'Nerdy girl', svg: badge('#ffd7e6',
+                torso(82, '#6fbf73') + `<path d="M40 73 L50 84 L60 73 Z" fill="#fff" ${ST}/>` +
+                `<path d="M26 56 Q20 22 50 20 Q80 22 74 56 L79 84 Q70 90 66 80 L66 64 L34 64 L34 80 Q30 90 21 84 Z" fill="${NERD_HAIR}" ${ST}/>` +
+                `<circle cx="50" cy="55" r="22" fill="#ffdcbc" ${ST}/>` +
+                `<path d="M27 52 Q25 26 50 26 Q75 26 73 52 Q70 40 50 38 Q30 40 27 52 Z" fill="${NERD_HAIR}" ${ST}/>` +
+                `<circle cx="39" cy="57" r="10" fill="#cfe8ff" fill-opacity=".6" ${ST}/><circle cx="61" cy="57" r="10" fill="#cfe8ff" fill-opacity=".6" ${ST}/>` +
+                bigEye(39, 58) + bigEye(61, 58) + LINE('M49 56 q1 -2 2 0') +
+                LINE('M29 55 L25 53', 2) + LINE('M71 55 L75 53', 2) +
+                `<path d="M33 52 q2 -3 5 -3" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>` +
+                `<path d="M44 68 Q50 76 56 68 Z" fill="#fff" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>`)
         },
-
         {
 
             name: 'Pirate', svg: badge('#e0d6ff',
