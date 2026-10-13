@@ -7,14 +7,14 @@ from typing import Optional
 # (row change, column change) for the eight directions a word can run in.
 DIRS = [(0, 1), (1, 0), (1, 1), (-1, 1), (0, -1), (-1, 0), (-1, -1), (1, -1)]
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-BOARD_SIZE = 13
+BOARD_SIZE = 15
 
-WORD_SETS = {
-    "animals": ["TIGER", "ZEBRA", "OTTER", "FALCON", "PANDA", "LEMUR", "BADGER", "GIRAFFE"],
-    "kitchen": ["WHISK", "LADLE", "SPATULA", "COLANDER", "GRATER", "SKILLET", "TEAPOT", "MORTAR"],
-    "space": ["COMET", "ORBIT", "GALAXY", "NEBULA", "ROCKET", "PLANET", "METEOR", "ECLIPSE"],
-    "cities": ["LONDON", "PARIS", "ROME", "MADRID", "VIENNA", "PRAGUE", "LISBON", "OSLO"],
+WORD_POOL = {
+    "short": ["LION", "OVEN", "MOON", "ROME", "OSLO", "ZEBRA", "COMET", "ORBIT", "WHISK", "PARIS", "OTTER", "PANDA", "BOOK", "TREE", "FISH", "RAIN", "DOOR", "SAND", "WAVE", "BELL", "CLOUD", "PIANO", "TIGER", "LEMON"],
+    "medium": ["LONDON", "ROCKET", "KETTLE", "FALCON", "GALAXY", "MADRID", "SKILLET", "SPATULA", "ECLIPSE", "GIRAFFE", "KANGAROO", "LISBON", "GUITAR", "BRIDGE", "CASTLE", "DOLPHIN", "LANTERN", "PUZZLE", "VOLCANO", "WINDOW", "PENGUIN", "THUNDER", "BLANKET", "HARBOUR"],
+    "long": ["ASTRONAUT", "TELESCOPE", "DISHWASHER", "PORCUPINE", "CHIMPANZEE", "COPENHAGEN", "EDINBURGH", "AMSTERDAM", "CROCODILE", "MICROWAVE",  "BUTTERFLY", "ADVENTURE", "LIGHTHOUSE", "RAINFOREST", "SKYSCRAPER", "WATERFALL", "MOUNTAINS", "CHOCOLATE", "DINOSAUR", "NOTEBOOK"],
 }
+WORD_COUNTS = {"short": 3, "medium": 5, "long": 4}
 
 VALID_SIZES = (1, 2, 3, 4, 6, 8)
 AVATAR_COUNT = 8  # the page draws 8 characters; each player in a room gets a different one
@@ -118,8 +118,9 @@ class Room:
 
     def new_round(self):
         self.round += 1
-        self.theme = self.rng.choice(list(WORD_SETS))
-        self.words = list(WORD_SETS[self.theme])
+        self.theme = "mixed"
+        self.words = [w for k, n in WORD_COUNTS.items() for w in self.rng.sample(WORD_POOL[k], n)]
+        self.rng.shuffle(self.words)
         self.grid = make_grid(self.words, BOARD_SIZE, self.rng)
         self.size = len(self.grid)
         self.spots = {w: occurrences(self.grid, w) for w in self.words}  # server only
@@ -219,6 +220,14 @@ class Room:
         if cell in p.picked:
             p.picked.remove(cell)
             return
+        if self.team_size>1:
+            for word in self.words:
+                if word in self.found[p.team]:
+                    continue
+                for cells in self.spots[word]:
+                    if cell in cells and len(cells)>5:
+                        if sum(1 for c in cells if c in p.picked) >= 5:
+                            return  # don't allow picking a letter that would complete a word for the team
         p.picked.append(cell)
 
         teammates = [q for q in self.players.values() if q.team == p.team]
@@ -231,9 +240,15 @@ class Room:
             if word in found:
                 continue
             for cells in self.spots[word]:
-                if all(c in picked for c in cells):
-                    done.append((word, cells))
-                    break
+                if not all(c in picked for c in cells):
+                    continue
+                if self.team_size>1 and len(cells)>5:
+                    # mine=[c for c in cells if c in p.picked]
+                    shares=[sum(1 for c in cells if c in q.picked) for q in teammates]
+                    if max(shares)>5 and sum(1 for s in shares if s>0)==1:
+                        continue
+                done.append((word, cells))
+                break
         if not done:
             return
         used = set()
