@@ -1,23 +1,10 @@
 /* Word Duel — pop arcade lobby
-   Add this stylesheet after the existing <style> block.
-   No JavaScript changes are required. */
+   Load before game.css. Needs the colour variables defined in game.css. */
 
-:root {
-    --arcade-night: var(--ink);
-    --arcade-paper: var(--paper);
-    --arcade-muted: var(--muted);
-    --arcade-line: var(--line);
-    --arcade-pink: var(--t0);
-    --arcade-mint: var(--t2);
-    --arcade-yellow: var(--sticker-yellow);
-    --arcade-blue: var(--t1);
-    --arcade-purple: var(--t3);
-}
-
-/* Match the dotted green game-page backdrop */
+/* ---------- page ---------- */
 body:has(#join:not([hidden])) {
     min-height: 100vh;
-    color: var(--arcade-night);
+    color: var(--ink);
     background:
         radial-gradient(var(--dots) 1.7px, transparent 1.9px) 0 0 / 17px 17px,
         var(--bg);
@@ -33,14 +20,20 @@ body:has(#join:not([hidden])) {
     gap: 24px;
 }
 
-/* Match the outlined game-page wordmark and stickers */
-.app:has(#join:not([hidden]))>h1 {
+/* ---------- title + stickers ---------- */
+.app:has(#join:not([hidden]))>.page-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+}
+
+.app:has(#join:not([hidden]))>.page-header>h1 {
     position: relative;
     isolation: isolate;
     margin: 0 0 18px;
     color: var(--t0);
     font-family: "Pacifico", cursive;
-    font-size: clamp(3rem, 8vw, 5rem);
+    font-size: clamp(1.5rem, 6vw, 3.5rem);
     font-weight: 400;
     line-height: 1;
     letter-spacing: 0;
@@ -50,7 +43,8 @@ body:has(#join:not([hidden])) {
     text-shadow: 5px 5px 0 var(--ink);
 }
 
-.app:has(#join:not([hidden]))>h1::after {
+/* tagline pill */
+.app:has(#join:not([hidden]))>.page-header>h1::after {
     content: "A tiny game of big words";
     display: table;
     margin: 14px auto 0;
@@ -68,38 +62,57 @@ body:has(#join:not([hidden])) {
     transform: rotate(-2deg);
 }
 
-.app:has(#join:not([hidden]))>h1::before {
+/* "GO!" starburst */
+.app:has(#join:not([hidden]))>.page-header>h1::before {
     content: "GO!";
     position: absolute;
-    right: -104px;
+    right: -100px;
     top: -4px;
+    z-index: -1;
     display: grid;
     place-items: center;
-    width: 82px;
-    height: 82px;
+    width: 72px;
+    height: 72px;
     background: var(--sticker-cyan);
     color: var(--ink);
-    font: 800 1.15rem/1 var(--f-body);
+    font: 700 1.1rem/1 var(--f-body);
     -webkit-text-stroke: 0;
     text-shadow: none;
     transform: rotate(12deg);
-    z-index: -1;
     clip-path: polygon(50% 0, 61% 20%, 82% 11%, 79% 34%, 100% 42%, 82% 58%, 92% 80%, 68% 77%, 58% 100%, 45% 80%, 22% 92%, 24% 68%, 0 55%, 20% 42%, 10% 20%, 33% 24%);
 }
 
-/* Join/create card */
-#join.join {
-    width: min(100%, 470px);
+/* ---------- cards: join/create, rejoin, waiting room ---------- */
+#join.join,
+#rejoinBox.rejoin,
+#waiting.waiting {
     max-width: none;
-    gap: 20px;
-    padding: clamp(22px, 5vw, 34px);
     border: 3px solid var(--ink);
     border-radius: 22px;
     background: var(--paper);
     box-shadow: 5px 5px 0 var(--ink);
+}
+
+#join.join {
+    width: min(100%, 470px);
+    gap: 20px;
+    padding: clamp(22px, 5vw, 34px);
     animation: lobby-arrive .45s cubic-bezier(.2, .8, .2, 1) both;
 }
 
+#rejoinBox.rejoin {
+    width: min(100%, 470px);
+    gap: 12px;
+    padding: 22px;
+}
+
+#waiting.waiting {
+    width: min(100%, 560px);
+    gap: 16px;
+    padding: clamp(20px, 4vw, 30px);
+}
+
+/* ---------- form fields ---------- */
 #join .field {
     gap: 8px;
 }
@@ -118,10 +131,10 @@ body:has(#join:not([hidden])) {
     border: 2px solid var(--ink);
     border-radius: 10px;
     background: #fff;
-    color: var(--arcade-night);
+    color: var(--ink);
     font: 500 1rem/1.4 var(--f-body);
     box-shadow: 2px 2px 0 var(--ink);
-    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    transition: border-color .18s ease, box-shadow .18s ease;
 }
 
 #join .field input::placeholder {
@@ -136,11 +149,28 @@ body:has(#join:not([hidden])) {
 }
 
 #join #code {
-    letter-spacing: .16em;
     font-size: 1.05rem;
+    letter-spacing: .16em;
 }
 
-/* Create room / Join room segmented choice */
+#join .hint {
+    color: var(--muted);
+    font-size: .85rem;
+    line-height: 1.5;
+}
+
+/* validation message (keeps its role=alert) */
+#join .err {
+    min-height: 0;
+    color: #b42355;
+    font-size: .9rem;
+}
+
+#join .err:empty {
+    display: none;
+}
+
+/* ---------- Create room / Join room switch ---------- */
 #join .modes {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -164,7 +194,7 @@ body:has(#join:not([hidden])) {
     border-radius: 8px;
     color: var(--muted);
     font-size: .92rem;
-    transition: background .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease;
+    transition: background .18s ease, color .18s ease, box-shadow .18s ease;
 }
 
 #join .mode input:checked+span {
@@ -184,16 +214,8 @@ body:has(#join:not([hidden])) {
     color: var(--ink);
 }
 
-/* Helpful hint under the player-count dropdown */
-#join .hint {
-    color: var(--arcade-muted);
-    font-size: .85rem;
-    line-height: 1.5;
-}
-
-/* Main action */
+/* ---------- buttons ---------- */
 #join #goBtn {
-    position: relative;
     width: 100%;
     min-height: 50px;
     padding: 12px 20px;
@@ -225,35 +247,12 @@ body:has(#join:not([hidden])) {
     outline-offset: 4px;
 }
 
-/* Validation feedback keeps its existing role=alert */
-#join .err {
-    min-height: 0;
-    color: #b42355;
-    font-size: .9rem;
-}
-
-#join .err:empty {
-    display: none;
-}
-
-/* Rejoin card shares the new lobby styling */
-#rejoinBox.rejoin {
-    width: min(100%, 470px);
-    max-width: none;
-    gap: 12px;
-    padding: 22px;
-    border: 3px solid var(--ink);
-    border-radius: 22px;
-    background: var(--paper);
-    box-shadow: 5px 5px 0 var(--ink);
-}
-
 #rejoinBox .btn {
     min-height: 48px;
     border: 3px solid var(--ink);
     border-radius: 12px;
-    background: var(--arcade-mint);
-    color: var(--arcade-night);
+    background: var(--t2);
+    color: var(--ink);
     box-shadow: 4px 4px 0 var(--ink);
 }
 
@@ -263,20 +262,9 @@ body:has(#join:not([hidden])) {
     box-shadow: 5px 5px 0 var(--ink);
 }
 
-/* Waiting room: matching card, code badge and player chips */
-#waiting.waiting {
-    width: min(100%, 560px);
-    max-width: none;
-    gap: 16px;
-    padding: clamp(20px, 4vw, 30px);
-    border: 3px solid var(--ink);
-    border-radius: 22px;
-    background: var(--paper);
-    box-shadow: 5px 5px 0 var(--ink);
-}
-
+/* ---------- waiting room ---------- */
 #waiting h2 {
-    color: var(--arcade-night);
+    color: var(--ink);
     font-size: clamp(1.35rem, 4vw, 1.8rem);
 }
 
@@ -305,6 +293,7 @@ body:has(#join:not([hidden])) {
     box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--ink);
 }
 
+/* ---------- motion ---------- */
 @keyframes lobby-arrive {
     from {
         opacity: 0;
@@ -317,6 +306,20 @@ body:has(#join:not([hidden])) {
     }
 }
 
+@media (prefers-reduced-motion: reduce) {
+
+    #join.join,
+    #rejoinBox .btn,
+    #join .field input,
+    #join .field select,
+    #join .mode span,
+    #join #goBtn {
+        animation: none;
+        transition: none;
+    }
+}
+
+/* ---------- small screens ---------- */
 @media (max-width: 520px) {
     .app:has(#join:not([hidden])) {
         width: min(100% - 24px, 1080px);
@@ -324,7 +327,8 @@ body:has(#join:not([hidden])) {
         gap: 18px;
     }
 
-    .app:has(#join:not([hidden]))>h1::before {
+    /* the GO! sticker would hang off the screen */
+    .app:has(#join:not([hidden]))>.page-header>h1::before {
         display: none;
     }
 
@@ -336,16 +340,5 @@ body:has(#join:not([hidden])) {
 
     #join .mode span {
         font-size: .86rem;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    #join.join,
-    #rejoinBox .btn,
-    #join .field input,
-    #join .field select,
-    #join .mode span,
-    #join #goBtn {
-        transition: none;
     }
 }

@@ -8,50 +8,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&family=Pacifico&display=swap"
         rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <style>
+        /* Colours, shadows and most component styling live in lobby.css and game.css.
+           This block only holds fonts, structure and the board's flat fallback. */
         :root {
-            color-scheme: light dark;
-            --bg: #e8ecf3;
-            --paper: #f7f9fc;
-            --ink: #14213d;
-            --muted: #56627f;
-            --line: #ccd4e2;
-            /* four team colours: fill, text on paper */
-            --t0: #4f46e5;
-            --t1: #b45309;
-            --t2: #0f766e;
-            --t3: #be185d;
-            --t0t: #4338ca;
-            --t1t: #92400e;
-            --t2t: #0f766e;
-            --t3t: #9d174d;
-            --sel: rgba(20, 33, 61, 0.16);
-            --danger: #b42318;
             --f-display: 'Bricolage Grotesque', system-ui, sans-serif;
             --f-body: 'DM Sans', system-ui, sans-serif;
             --f-mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #0e1424;
-                --paper: #151d33;
-                --ink: #e8ecf6;
-                --muted: #98a3c0;
-                --line: #2a3556;
-                --t0: #5a5ee8;
-                --t0t: #a9acff;
-                --t1t: #fbbf6a;
-                --t2t: #5eead4;
-                --t3t: #f9a8d4;
-                --sel: rgba(232, 236, 246, 0.22);
-                --danger: #ff8a7a;
-            }
         }
 
         * {
@@ -64,7 +29,6 @@
 
         body {
             margin: 0;
-            background: var(--bg);
             color: var(--ink);
             font: 16px/1.5 var(--f-body);
         }
@@ -77,30 +41,9 @@
             gap: 20px;
         }
 
-        h1 {
-            font: 800 clamp(2.2rem, 6vw, 3.2rem)/1 var(--f-display);
-            letter-spacing: -0.03em;
-            margin: 0;
-        }
-
         .btn {
             font: inherit;
-            font-weight: 700;
-            padding: 0.65rem 1.1rem;
-            border-radius: 8px;
-            border: 2px solid var(--ink);
-            background: var(--ink);
-            color: var(--bg);
             cursor: pointer;
-        }
-
-        .btn:hover {
-            opacity: 0.88;
-        }
-
-        :focus-visible {
-            outline: 3px solid var(--t0);
-            outline-offset: 2px;
         }
 
         .hint {
@@ -111,18 +54,6 @@
 
         .rejoin {
             display: grid;
-            gap: 6px;
-            max-width: 420px;
-            background: var(--paper);
-            border: 2px solid var(--t0);
-            border-radius: 10px;
-            padding: 14px 18px;
-        }
-
-        .rejoin .btn {
-            background: var(--t0);
-            border-color: var(--t0);
-            color: #fff;
         }
 
         .err {
@@ -169,51 +100,29 @@
         /* lobby */
         .join {
             display: grid;
-            gap: 14px;
-            max-width: 420px;
-            background: var(--paper);
-            border: 2px solid var(--line);
-            border-radius: 10px;
-            padding: 18px;
         }
 
         .field {
             display: grid;
-            gap: 4px;
         }
 
         .field label {
-            font-size: 0.8rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
             text-transform: uppercase;
-            color: var(--muted);
         }
 
         .field input,
         .field select {
-            font: inherit;
-            color: var(--ink);
-            background: var(--bg);
-            border: 2px solid var(--line);
-            border-radius: 8px;
-            padding: 0.55rem 0.7rem;
             width: 100%;
         }
 
         #code {
             font-family: var(--f-mono);
             text-transform: uppercase;
-            letter-spacing: 0.12em;
         }
 
         .modes {
-            border: 0;
             margin: 0;
-            padding: 0;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
         }
 
         .mode {
@@ -230,37 +139,14 @@
         }
 
         .mode span {
-            display: block;
-            text-align: center;
-            padding: 0.6rem;
-            border: 2px solid var(--line);
-            border-radius: 8px;
             font-weight: 700;
-        }
-
-        .mode input:checked+span {
-            background: var(--ink);
-            color: var(--bg);
-            border-color: var(--ink);
-        }
-
-        .mode input:focus-visible+span {
-            outline: 3px solid var(--t0);
-            outline-offset: 2px;
         }
 
         .waiting {
             display: grid;
-            gap: 12px;
-            max-width: 420px;
-            background: var(--paper);
-            border: 2px solid var(--line);
-            border-radius: 10px;
-            padding: 18px;
         }
 
         .waiting h2 {
-            font: 800 1.5rem/1.15 var(--f-display);
             margin: 0;
         }
 
@@ -276,126 +162,25 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            background: var(--bg);
-            border-radius: 10px;
-            padding: 6px 10px;
             font-weight: 500;
             overflow-wrap: anywhere;
-        }
-
-        .waiting li .badge {
-            width: 36px;
-            height: 36px;
-            box-shadow: 0 0 0 2px var(--line);
         }
 
         .waiting li.pop .badge {
             animation: drop 0.5s cubic-bezier(.3, 1.4, .5, 1);
         }
 
-        .code {
-            font-family: var(--f-mono);
-            font-weight: 600;
-            letter-spacing: 0.12em;
-            background: var(--paper);
-            border: 2px solid var(--line);
-            border-radius: 6px;
-            padding: 2px 8px;
-        }
-
         .waiting .code {
-            font-size: 1.6rem;
-            background: var(--bg);
             justify-self: start;
         }
 
         /* game */
-        .bar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px 16px;
-            align-items: baseline;
-        }
-
-        .timer {
-            font-family: var(--f-mono);
-            font-weight: 600;
-        }
-
-        .board {
-            display: grid;
-            gap: 20px;
-            grid-template-columns: minmax(0, 1fr);
-        }
-
-        @media (min-width: 860px) {
-            .board {
-                grid-template-columns: minmax(0, 1fr) 300px;
-                column-gap: 28px;
-            }
-        }
-
-        .main {
-            display: grid;
-            gap: 12px;
-            min-width: 0;
-            align-content: start;
-        }
-
-        .msg {
-            margin: 0;
-            min-height: 1.6em;
-            font-weight: 500;
-            color: var(--tct);
-        }
-
-        .roster {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px 18px;
-        }
-
-        .who {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 500;
-        }
-
-        .who .badge {
-            width: 34px;
-            height: 34px;
-            box-shadow: 0 0 0 2px var(--tc);
-        }
-
-        .who.away {
-            opacity: 0.45;
-        }
-
-        .who.me .badge {
-            box-shadow: 0 0 0 3px var(--ink);
-        }
-
-        .picked {
-            margin: 0;
-            min-height: 1.5em;
-            font-weight: 500;
-            letter-spacing: 0.04em;
-        }
-
         .keys {
             margin: 0;
-            font-size: 0.9rem;
-            color: var(--muted);
         }
 
         kbd {
             font-family: var(--f-mono);
-            font-size: 0.85em;
-            background: var(--paper);
-            border: 1.5px solid var(--line);
-            border-radius: 4px;
-            padding: 0 5px;
         }
 
         /* the board: letters in .grid, characters in .pawns on top so they can slide */
@@ -410,11 +195,6 @@
             display: grid;
             grid-template-columns: repeat(var(--n, 13), 1fr);
             aspect-ratio: 1;
-            width: 100%;
-            background: var(--paper);
-            border: 2px solid var(--ink);
-            border-radius: 6px;
-            overflow: hidden;
             user-select: none;
         }
 
@@ -423,32 +203,10 @@
             display: grid;
             place-items: center;
             font-family: var(--f-mono);
-            font-weight: 600;
-            font-size: calc(100cqw / var(--n, 13) * 0.5);
             line-height: 1;
-            box-shadow: inset 0 0 0 0.5px var(--line);
         }
 
-        .cell.f {
-            background: var(--tc);
-            color: #fff;
-        }
-
-        .cell.anch {
-            box-shadow: inset 0 0 0 3px var(--tc);
-        }
-
-        .cell.sel {
-            background: var(--sel);
-            box-shadow: inset 0 0 0 2px var(--ink);
-            color: var(--ink);
-        }
-
-        /* the cell you stand on: a ring, plus its letter repeated in a chip, because your character covers the letter */
-        .cell.here {
-            box-shadow: inset 0 0 0 3px var(--tc);
-        }
-
+        /* the cell you stand on: its letter is repeated in a chip, because your character covers the letter */
         .cell.here::after {
             content: attr(data-l);
             position: absolute;
@@ -458,8 +216,6 @@
             line-height: 1.25;
             padding: 0 0.3em;
             border-radius: 0.3em;
-            background: var(--ink);
-            color: var(--bg);
         }
 
         .pawns {
@@ -548,60 +304,16 @@
             display: block;
             width: 100%;
             height: auto;
-            filter: drop-shadow(0 4px 0 rgba(23, 19, 31, 0.14));
-        }
-
-        .info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            background: var(--paper);
-            border: 2px solid var(--line);
-            border-radius: 10px;
-            padding: 10px 14px;
+            filter: drop-shadow(0 4px 0 rgba(19, 20, 31, 0.397));
         }
 
         .info .lab {
             display: block;
-            font-size: 0.72rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
             text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 4px;
-        }
-
-        .info .code {
-            font-size: 1.2rem;
-        }
-
-        .info .timer {
-            font-size: 1.15rem;
-            line-height: 1.25;
-        }
-
-        .side {
-            display: grid;
-            gap: 16px;
-            align-content: start;
-            min-width: 0;
-        }
-
-        .teams {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 10px;
         }
 
         .tbox {
-            background: var(--paper);
-            border: 2px solid var(--tc);
-            border-radius: 10px;
-            padding: 10px 12px;
-            min-width: 0;
             display: grid;
-            gap: 4px;
             align-content: start;
         }
 
@@ -609,24 +321,13 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
             text-transform: uppercase;
-            color: var(--tct);
-            overflow-wrap: anywhere;
         }
 
         .tbox .tl .badge {
             width: 24px;
             height: 24px;
             box-shadow: 0 0 0 1.5px var(--tc);
-        }
-
-        .tbox .sc {
-            font: 800 2.4rem/1.05 var(--f-display);
-            font-variant-numeric: tabular-nums;
-            color: var(--tct);
         }
 
         .tbox .mems {
@@ -638,9 +339,6 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: 0.9rem;
-            color: var(--muted);
-            overflow-wrap: anywhere;
         }
 
         .tbox .mem .badge {
@@ -650,79 +348,24 @@
         }
 
         .tbox .done {
-            font-size: 0.9rem;
             font-weight: 700;
-            color: var(--tct);
         }
 
         .words h2 {
-            font: 700 1.1rem var(--f-display);
-            margin: 0 0 8px;
-            display: flex;
             justify-content: space-between;
-            align-items: baseline;
         }
 
         .words h2 span {
-            font: 500 0.85rem var(--f-body);
-            color: var(--muted);
+            font-family: var(--f-body);
         }
 
         .words ul {
             list-style: none;
             margin: 0;
             padding: 0;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-        }
-
-        @media (min-width: 860px) {
-            .words ul {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .words li {
-            display: flex;
-            justify-content: space-between;
-            gap: 8px;
-            background: var(--paper);
-            border: 1.5px solid var(--line);
-            border-radius: 8px;
-            padding: 6px 10px;
-        }
-
-        .words .w {
-            font-family: var(--f-mono);
-            font-weight: 600;
-            letter-spacing: 0.08em;
-        }
-
-        .words .n {
-            font-size: 0.8rem;
-            color: var(--muted);
-        }
-
-        .words li.f {
-            border-color: var(--tc);
-            color: var(--tct);
-        }
-
-        .words li.f .w {
-            text-decoration: line-through;
-            text-decoration-thickness: 2px;
-        }
-
-        .words li.f .n {
-            color: inherit;
         }
 
         .result {
-            background: var(--paper);
-            border: 2px solid var(--ink);
-            border-radius: 10px;
-            padding: 14px;
             display: grid;
             gap: 10px;
             justify-items: start;
@@ -730,7 +373,6 @@
 
         .result p {
             margin: 0;
-            font: 800 1.4rem/1.15 var(--f-display);
         }
     </style>
     <link rel="stylesheet" href="/static/lobby.css">
@@ -740,11 +382,16 @@
 
 <body>
     <main class="app">
-        <h1>Word&nbsp;&nbsp;Duel</h1>
+        <header class="page-header">
+            <h1>Word&nbsp;&nbsp;Duel</h1>
+            <div class="info" id="gameInfo">
+                <div><span class="lab">Room</span><span class="code" id="roomCode"></span></div>
+                <div id="timerWrap" hidden><span class="lab">Time</span><span class="timer" id="timer">0:00</span></div>
+            </div>
+        </header>
         <div class="rejoin" id="rejoinBox" hidden>
             <strong id="rejoinText"></strong>
             <button class="btn" type="button" id="rejoinBtn">Rejoin game</button>
-            <p class="hint">Shown because you left a game that is still running.</p>
         </div>
         <form class="join" id="join">
             <div class="field">
@@ -791,21 +438,16 @@
                         <div class="pawns" id="pawns" aria-hidden="true"></div>
                     </div>
                     <p class="keys"><kbd>Arrows</kbd> move &nbsp; <kbd>Space</kbd> pick or deselect the letter you are
-                        on. A word counts once all its letters are picked &nbsp; <kbd>Esc</kbd> clears all</p>
+                        on. &nbsp; <kbd>Esc</kbd> clears all</p>
                     <div class="result" id="result" hidden>
                         <p id="resultText"></p>
                         <button class="btn" type="button" id="again">Play again</button>
                     </div>
                 </div>
                 <aside class="side">
-                    <div class="info">
-                        <div><span class="lab">Room</span><span class="code" id="roomCode"></span></div>
-                        <div id="timerWrap" hidden><span class="lab">Time</span><span class="timer"
-                                id="timer">0:00</span></div>
-                    </div>
                     <div class="teams" id="teams"></div>
                     <div class="words">
-                        <h2>Words to find <span id="left"></span></h2>
+                        <h2>Words to find</h2>
                         <ul id="wordList"></ul>
                     </div>
                 </aside>
@@ -813,515 +455,7 @@
         </section>
     </main>
     <script src="/static/avatars.js"></script>
-    <script>
-        /* ---------- avatar module ---------- */
-        const { AVATARS, badgeEl } = window.WordDuelAvatars;
-        /* ---------- helpers ---------- */
-        const $ = id => document.getElementById(id);
-        const TEAM_NAMES = ['Pink', 'Blue', 'Green', 'Purple'];
-        let notice = '';  // a standing note under the room code, such as why 3D is off
-        let ws = null, S = null, builtRound = -1, cells = [], waitingIds = new Set();
-        const pawns = new Map();  // player id -> the character's element on the board
-        function el(tag, cls, text) {
-            const e = document.createElement(tag);
-            if (cls) e.className = cls;
-            if (text !== undefined) e.textContent = text;
-            return e;
-        }
-        function fmt(sec) {
-            sec = Math.max(0, Math.floor(sec));
-            return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
-        }
-        function modeText(n) {
-            if (n === 1) return 'Solo. Find every word on your own.';
-            if (n < 4) return 'Everyone plays alone on their own board, racing to find all the words first.';
-            return `Teams of 2. Each team has its own board with the same words.`;
-        }
-        /* ---------- lobby ---------- */
-        try { $('name').value = localStorage.getItem('wd-name') || ''; } catch (err) { }
-        function currentMode() { return document.querySelector('input[name=mode]:checked').value; }
-        function updateLobby() {
-            const create = currentMode() === 'create';
-            $('createFields').hidden = !create;
-            $('joinFields').hidden = create;
-            $('goBtn').textContent = create ? 'Create room' : 'Join room';
-            $('sizeHint').textContent = modeText(+$('size').value);
-            $('joinErr').textContent = '';
-        }
-        document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', updateLobby));
-        $('size').addEventListener('change', updateLobby);
-        updateLobby();
-        /* ---------- connecting, and coming back ----------
-           The server gives every player a secret token. It is kept in this tab's sessionStorage, so
-           a refresh or a dropped connection can take the same seat (same team, avatar and picks). */
-        const wsBase = () => `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`;
-        let session = null, retries = 0, retryTimer = 0, gaveUp = false;
-        function loadSession() { try { return JSON.parse(sessionStorage.getItem('wd-session')); } catch (err) { return null; } }
-        function saveSession() { try { sessionStorage.setItem('wd-session', JSON.stringify(session)); } catch (err) { } }
-        function clearSession() { session = null; try { sessionStorage.removeItem('wd-session'); } catch (err) { } }
-        const rejoinUrl = x => `${wsBase()}/join/${x.code}?name=${encodeURIComponent(x.name)}&rejoin=${encodeURIComponent(x.token)}`;
-        $('join').addEventListener('submit', e => {
-            e.preventDefault();
-            const name = $('name').value.trim() || 'Player';
-            try { localStorage.setItem('wd-name', name); } catch (err) { }
-            const q = `name=${encodeURIComponent(name)}`;
-            if (currentMode() === 'create') {
-                connect(`${wsBase()}/create?${q}&size=${$('size').value}`, name);
-            } else {
-                const code = $('code').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
-                if (!code) { $('joinErr').textContent = 'Enter the room code.'; return; }
-                connect(`${wsBase()}/join/${code}?${q}`, name);
-            }
-        });
-        // After a refresh: offer to take the seat back.
-        {
-            const old = loadSession();
-            if (old && old.code && old.token) {
-                session = old;
-                $('rejoinText').textContent = `You were playing in room ${old.code} as ${old.name}.`;
-                $('rejoinBox').hidden = false;
-                $('rejoinBtn').addEventListener('click', () => { gaveUp = false; connect(rejoinUrl(old), old.name); });
-            }
-        }
-        function connect(url, name) {
-            $('joinErr').textContent = '';
-            clearTimeout(retryTimer);
-            const sock = ws = new WebSocket(url);
-            sock.onmessage = ev => {
-                const m = JSON.parse(ev.data);
-                if (m.type === 'hello') {
-                    session = { code: m.code, token: m.token, name: name || (session && session.name) || 'Player' };
-                    saveSession();
-                } else if (m.type === 'error') {
-                    gaveUp = true;  // the server said no, so retrying would not help
-                    clearSession();
-                    $('rejoinBox').hidden = true;
-                    if (S) $('connMsg').textContent = m.text + ' Reload the page to start again.';
-                    else $('joinErr').textContent = m.text;
-                } else if (m.type === 'state') {
-                    if (!S) { $('join').hidden = true; $('rejoinBox').hidden = true; $('game').hidden = false; }
-                    retries = 0;
-                    $('connMsg').textContent = notice;
-                    m.recv = performance.now();
-                    S = m;
-                    render();
-                }
-            };
-            sock.onclose = () => {
-                if (sock !== ws || gaveUp) return;
-                if (S && session && retries < 30) {
-                    // Connection dropped mid-game: keep trying to take the same seat back.
-                    retries++;
-                    $('connMsg').textContent = 'Connection lost. Reconnecting...';
-                    retryTimer = setTimeout(() => connect(rejoinUrl(session), session.name), Math.min(1000 * retries, 5000));
-                } else if (S) {
-                    $('connMsg').textContent = 'Disconnected from the server. Reload the page to rejoin.';
-                } else if (!$('joinErr').textContent) {
-                    $('joinErr').textContent = 'Could not connect to the server.';
-                }
-            };
-        }
-        function send(obj) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); }
-        /* ---------- 3D board (Three.js) ----------
-           A raised board with keycap tiles. Picked tiles press down, found words rise in your
-           team colour, and the characters stand on coloured pedestals. If Three.js or WebGL is
-           missing, nothing here runs and the flat board is used instead. */
-        const B3 = (() => {
-            const api = { ready: false, tried: false };
-            let R, scene, cam, stage, group, N = 0, round3 = -1, tiles = [], pawns3 = new Map();
-            let col = {}, colKey = '', lastW = 0, sideMat, slabMat, topGeo, flatGeo;
-            const letterCache = new Map(), avCache = new Map();
-            const rm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-            function readColours() {
-                const root = getComputedStyle(document.documentElement), main = getComputedStyle($('mainCol'));
-                const g = (cs, n, d) => cs.getPropertyValue(n).trim() || d;
-                const raw = {
-                    paper: g(root, '--paper', '#f7f9fc'), ink: g(root, '--ink', '#14213d'),
-                    line: g(root, '--line', '#ccd4e2'), tc: g(main, '--tc', '#4f46e5')
-                };
-                const key = Object.values(raw).join('|');
-                const changed = key !== colKey;
-                colKey = key;
-                col = { raw };
-                for (const k in raw) col[k] = new THREE.Color(raw[k]);
-                return changed;
-            }
-            function paintLetter(e) {
-                const x = e.cv.getContext('2d');
-                x.clearRect(0, 0, 128, 128);
-                x.fillStyle = e.light ? '#ffffff' : col.raw.ink;
-                x.font = '800 88px "Bricolage Grotesque", "DM Sans", sans-serif';
-                x.textAlign = 'center'; x.textBaseline = 'middle';
-                x.fillText(e.ch, 64, 70);
-                e.tex.needsUpdate = true;
-            }
-            function letterMat(ch, light) {
-                const key = ch + (light ? 'w' : 'k');
-                let e = letterCache.get(key);
-                if (!e) {
-                    const cv = document.createElement('canvas'); cv.width = cv.height = 128;
-                    const tex = new THREE.CanvasTexture(cv);
-                    tex.anisotropy = R.capabilities.getMaxAnisotropy();
-                    e = { cv, tex, ch, light, mat: new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }) };
-                    letterCache.set(key, e);
-                    paintLetter(e);
-                }
-                return e.mat;
-            }
-            // The SVG badge drawn onto a canvas, with a ring in the team colour.
-            function avatarTex(i, ring, me) {
-                const key = i + '|' + ring + '|' + me;
-                let e = avCache.get(key);
-                if (e) return e;
-                const cv = document.createElement('canvas'); cv.width = cv.height = 256;
-                const tex = new THREE.CanvasTexture(cv);
-                tex.anisotropy = R.capabilities.getMaxAnisotropy();
-                e = tex;
-                avCache.set(key, e);
-                const img = new Image();
-                img.onload = () => {
-                    const x = cv.getContext('2d');
-                    x.clearRect(0, 0, 256, 256);
-                    x.beginPath(); x.arc(128, 128, 126, 0, 7); x.fillStyle = me ? col.raw.ink : ring; x.fill();
-                    if (me) { x.beginPath(); x.arc(128, 128, 118, 0, 7); x.fillStyle = ring; x.fill(); }
-                    const pad = me ? 16 : 10;
-                    x.drawImage(img, pad, pad, 256 - 2 * pad, 256 - 2 * pad);
-                    tex.needsUpdate = true;
-                };
-                img.src = 'data:image/svg+xml;charset=utf-8,' +
-                    encodeURIComponent(AVATARS[i % AVATARS.length].svg.replace('<svg ', '<svg width="256" height="256" '));
-                return e;
-            }
-            api.init = function (host) {
-                api.tried = true;
-                if (typeof THREE === 'undefined') { api.why = 'Three.js did not load (no internet, or the CDN is blocked)'; return false; }
-                try {
-                    R = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-                    if (!R.getContext()) { api.why = 'WebGL is not available in this browser'; return false; }
-                } catch (err) { api.why = 'WebGL failed to start: ' + err.message; return false; }
-                stage = host;
-                R.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-                R.domElement.className = 'gl';
-                R.domElement.setAttribute('aria-hidden', 'true');
-                stage.append(R.domElement);
-                stage.classList.add('gl');
-                scene = new THREE.Scene();
-                cam = new THREE.PerspectiveCamera(22, 1, 0.1, 400);
-                scene.add(new THREE.AmbientLight(0xffffff, 0.64));
-                const sun = new THREE.DirectionalLight(0xffffff, 0.46);
-                sun.position.set(-4, 10, 6);
-                scene.add(sun);
-                topGeo = new THREE.BoxGeometry(0.94, 0.5, 0.94);
-                flatGeo = new THREE.PlaneGeometry(0.8, 0.8);
-                if (window.ResizeObserver) new ResizeObserver(() => fit()).observe(stage);
-                if (document.fonts) document.fonts.load('800 88px "Bricolage Grotesque"').then(() => letterCache.forEach(paintLetter)).catch(() => { });
-                api.ready = true;
-                tick();
-                return true;
-            };
-            function fit() {
-                if (!R) return;
-                const w = Math.max(240, stage.clientWidth), h = Math.round(w * 0.76);
-                lastW = stage.clientWidth;
-                R.setSize(w, h, false);
-                cam.aspect = w / h;
-                const n = N || 13, d = n * 2.6, pitch = 56 * Math.PI / 180;
-                cam.position.set(0, d * Math.sin(pitch), d * Math.cos(pitch) + n * 0.02);
-                cam.lookAt(0, -0.2, n * 0.02 + 0.9);
-                cam.updateProjectionMatrix();
-            }
-            function buildBoard(S) {
-                if (group) {
-                    scene.remove(group);
-                    tiles.forEach(t => t.top.dispose());
-                    sideMat.dispose(); slabMat.dispose();
-                }
-                pawns3.forEach(pw => scene.remove(pw.g));
-                pawns3.clear();
-                N = S.size; round3 = S.round;
-                group = new THREE.Group();
-                scene.add(group);
-                sideMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
-                slabMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
-                const rim = 0.3;
-                const slab = new THREE.Mesh(new THREE.BoxGeometry(N + 2 * rim, 0.16, N + 2 * rim), slabMat);
-                slab.position.y = -0.58;
-                group.add(slab);
-                // a raised frame on all four sides, so the far (top) edge of the board has a border too
-                const bar = (w, d, x, z) => {
-                    const m = new THREE.Mesh(new THREE.BoxGeometry(w, 0.5, d), slabMat);
-                    m.position.set(x, -0.25, z);
-                    group.add(m);
-                };
-                const mid = N / 2 + rim / 2;
-                bar(N + 2 * rim, rim, 0, -mid); bar(N + 2 * rim, rim, 0, mid);
-                bar(rim, N, -mid, 0); bar(rim, N, mid, 0);
-                tiles = [];
-                const half = (N - 1) / 2;
-                for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
-                    const g = new THREE.Group();
-                    g.position.set(c - half, 0, r - half);
-                    const top = new THREE.MeshLambertMaterial({ color: 0xffffff });
-                    const box = new THREE.Mesh(topGeo, [sideMat, sideMat, top, sideMat, sideMat, sideMat]);
-                    box.position.y = -0.25;
-                    const letter = new THREE.Mesh(flatGeo, letterMat(S.grid[r][c], false));
-                    letter.rotation.x = -Math.PI / 2;
-                    letter.position.y = 0.004;
-                    g.add(box, letter);
-                    group.add(g);
-                    tiles.push({ g, top, letter, cur: 0, tgt: 0, ch: S.grid[r][c], light: false });
-                }
-                fit();
-            }
-            function recolour() {
-                sideMat.color.copy(col.paper).lerp(col.ink, 0.38);
-                slabMat.color.copy(col.paper).lerp(col.ink, 0.16);
-                letterCache.forEach(paintLetter);
-                pawns3.forEach(pw => pw.ped.material.color.copy(col.tc));
-            }
-            const mix = (a, b, t) => new THREE.Color().copy(a).lerp(b, t);
-            api.update = function (S, states) {
-                if (!api.ready) return;
-                const changed = readColours();
-                if (S.round !== round3 || S.size !== N) { buildBoard(S); recolour(); }
-                else if (changed) recolour();
-                if (stage.clientWidth !== lastW) fit();
-                for (let k = 0; k < tiles.length; k++) {
-                    const t = tiles[k], st = states[k];
-                    let top, h = 0, light = false;
-                    if (st === 'f') { top = col.tc; h = 0.14; light = true; }
-                    else if (st === 's') { top = mix(col.paper, col.ink, 0.24); h = -0.12; }
-                    else if (st === 'a') { top = mix(col.paper, col.tc, 0.45); h = -0.07; }
-                    else if (st === 'h') { top = mix(col.paper, col.tc, 0.3); h = 0.04; }
-                    else top = col.paper;
-                    t.top.color.copy(top);
-                    t.tgt = h;
-                    if (rm) t.cur = h;
-                    if (t.light !== light) { t.light = light; t.letter.material = letterMat(t.ch, light); }
-                }
-                const ids = new Set(S.players.map(p => p.id));
-                pawns3.forEach((pw, id) => { if (!ids.has(id)) { scene.remove(pw.g); pawns3.delete(id); } });
-                const half = (N - 1) / 2, inCell = {};
-                S.players.forEach(p => {
-                    const k = p.r * N + p.c;
-                    const o = inCell[k] = (k in inCell ? inCell[k] + 1 : 0);
-                    const me = p.id === S.you;
-                    let pw = pawns3.get(p.id);
-                    if (!pw) {
-                        const g = new THREE.Group();
-                        const ped = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.4, 0.14, 28), new THREE.MeshLambertMaterial({ color: col.tc }));
-                        ped.position.y = 0.07;
-                        const shadow = new THREE.Mesh(new THREE.CircleGeometry(0.5, 28), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.2, depthWrite: false }));
-                        shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.006;
-                        const sp = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true }));
-                        g.add(shadow, ped, sp);
-                        scene.add(g);
-                        pw = { g, ped, sp, x: p.c - half, z: p.r - half, hop: 0, drop: rm ? 0 : 1, k, key: '' };
-                        pawns3.set(p.id, pw);
-                    }
-                    if (pw.k !== k) { pw.k = k; if (!rm) pw.hop = 1; }
-                    pw.me = me;
-                    pw.ox = Math.min(o, 3) * 0.24;
-                    pw.tx = p.c - half; pw.tz = p.r - half;
-                    if (rm) { pw.x = pw.tx; pw.z = pw.tz; }
-                    const key = p.avatar + col.raw.tc + me;
-                    if (pw.key !== key) {
-                        pw.key = key;
-                        pw.sp.material.map = avatarTex(p.avatar, col.raw.tc, me);
-                        pw.sp.material.needsUpdate = true;
-                        const size = me ? 1.12 : 1.0;
-                        pw.sp.scale.set(size, size, 1);
-                        pw.sp.position.y = 0.14 + size * 0.5 - 0.04;
-                    }
-                });
-            };
-            function tick() {
-                requestAnimationFrame(tick);
-                if (!N || !stage.offsetParent) return;  // nothing to draw while the board is hidden
-                const f = rm ? 1 : 0.22, now = performance.now() / 1000;
-                for (const t of tiles) { t.cur += (t.tgt - t.cur) * f; t.g.position.y = t.cur; }
-                pawns3.forEach(pw => {
-                    pw.x += (pw.tx - pw.x) * (rm ? 1 : 0.3);
-                    pw.z += (pw.tz - pw.z) * (rm ? 1 : 0.3);
-                    pw.hop = Math.max(0, pw.hop - 0.09);
-                    pw.drop = Math.max(0, pw.drop - 0.035);
-                    const tile = tiles[pw.k], base = tile ? tile.cur : 0;
-                    const y = base + (pw.me ? Math.sin(now * 3) * 0.025 : 0) + 0.28 * Math.sin(Math.PI * (1 - pw.hop)) * (pw.hop > 0 ? 1 : 0) + 6 * pw.drop * pw.drop;
-                    pw.g.position.set(pw.x + pw.ox, y, pw.z);
-                });
-                R.render(scene, cam);
-            }
-            return api;
-        })();
-        /* ---------- drawing ---------- */
-        function teamLabel(t) {
-            if (S.mode === 'teams') return TEAM_NAMES[t] + ' team';
-            const m = S.teams[t].members;
-            return m.length ? m[0].name : TEAM_NAMES[t];
-        }
-        function updateTimer() {
-            if (!S || !S.started) return;
-            const t = S.over ? S.elapsed : S.elapsed + (performance.now() - S.recv) / 1000;
-            $('timer').textContent = fmt(t);
-        }
-        setInterval(updateTimer, 500);
-        function renderWaiting() {
-            $('wCount').textContent = `(${S.players.length} of ${S.capacity})`;
-            $('wCode').textContent = S.code;
-            const ul = $('wList');
-            ul.innerHTML = '';
-            S.players.forEach(p => {
-                const li = el('li', waitingIds.has(p.id) ? '' : 'pop');
-                li.append(badgeEl(p.avatar), document.createTextNode(p.name + (p.id === S.you ? ' (you)' : '')));
-                ul.append(li);
-            });
-            S.players.forEach(p => waitingIds.add(p.id));
-            $('wMode').textContent = modeText(S.capacity) + ' The game starts when the room is full.';
-        }
-        // The letters are built once per round; after that only their classes change.
-        function buildGrid() {
-            const grid = $('grid');
-            grid.innerHTML = '';
-            cells = [];
-            for (let r = 0; r < S.size; r++) {
-                for (let c = 0; c < S.size; c++) {
-                    const d = el('div', 'cell', S.grid[r][c]);
-                    d.dataset.l = S.grid[r][c];
-                    grid.append(d);
-                    cells.push(d);
-                }
-            }
-            $('pawns').innerHTML = '';
-            pawns.clear();
-            builtRound = S.round;
-        }
-        function hop(node) {
-            const b = node.firstChild;
-            b.classList.remove('hop');
-            void b.offsetWidth;  // restart the animation
-            b.classList.add('hop');
-        }
-        // Characters live in their own layer, so they slide from cell to cell instead of jumping.
-        function syncPawns() {
-            const layer = $('pawns');
-            const ids = new Set(S.players.map(p => p.id));
-            for (const [id, node] of pawns) {
-                if (!ids.has(id)) { node.remove(); pawns.delete(id); }
-            }
-            const inCell = {};
-            S.players.forEach(p => {
-                const k = p.r * S.size + p.c;
-                const o = inCell[k] = (k in inCell ? inCell[k] + 1 : 0);
-                let node = pawns.get(p.id);
-                if (!node) {
-                    node = el('div', 'pawn');
-                    node.append(badgeEl(p.avatar, 'drop'));
-                    layer.append(node);
-                    pawns.set(p.id, node);
-                }
-                node.classList.toggle('me', p.id === S.you);
-                const pos = p.r + ',' + p.c;
-                if (node.dataset.pos && node.dataset.pos !== pos) hop(node);
-                node.dataset.pos = pos;
-                node.style.setProperty('--r', p.r);
-                node.style.setProperty('--c', p.c);
-                node.style.setProperty('--o', Math.min(o, 3));
-            });
-        }
-        function render() {
-            $('roomCode').textContent = S.code;
-            $('waiting').hidden = S.started;
-            $('board').hidden = !S.started;
-            $('timerWrap').hidden = !S.started;
-            if (!S.started) { renderWaiting(); return; }
-            updateTimer();
-            const n = S.size, mt = S.myTeam;
-            $('mainCol').className = 'main t' + mt;  // passes your team's colour to the board, roster and message
-            $('stage').style.setProperty('--n', n);
-            if (!B3.tried) { B3.init($('stage')); if (!B3.ready) { notice = '3D view is off: ' + B3.why + '. Showing the flat board.'; $('connMsg').textContent = notice; } }
-            if (S.round !== builtRound) buildGrid();
-            // Only your own team's board is sent: its found words, its players and its picks.
-            const foundCells = new Set();
-            for (const f of S.found) for (const [r, c] of f.cells) foundCells.add(r * n + c);
-            const me = S.players.find(p => p.id === S.you);
-            const sel = new Set();
-            if (me) me.picked.forEach(([r, c]) => sel.add(r * n + c));
-            const mates = new Set();
-            S.players.forEach(p => {
-                if (p.id !== S.you) p.picked.forEach(([r, c]) => mates.add(r * n + c));
-            });
-            const hereK = me ? me.r * n + me.c : -1;
-            const states = [];
-            for (let k = 0; k < cells.length; k++) {
-                let cls = 'cell';
-                if (foundCells.has(k)) cls += ' f';
-                if (mates.has(k)) cls += ' anch';
-                if (sel.has(k)) cls += ' sel';
-                if (k === hereK) cls += ' here';
-                if (cells[k].className !== cls) cells[k].className = cls;
-                states.push(foundCells.has(k) ? 'f' : sel.has(k) ? 's' : mates.has(k) ? 'a' : k === hereK ? 'h' : '');
-            }
-            syncPawns();
-            B3.update(S, states);
-            const letters = me ? me.picked.map(([r, c]) => S.grid[r][c]).join(' ') : '';
-            // Progress of every team. You see how many words the others have, not which ones.
-            const teams = $('teams');
-            teams.innerHTML = '';
-            for (const T of S.teams) {
-                const box = el('div', 't' + T.team + ' tbox');
-                const head = el('span', 'tl');
-                if (S.mode !== 'teams' && T.members[0]) head.append(badgeEl(T.members[0].avatar));
-                head.append(document.createTextNode(teamLabel(T.team) + (T.team === mt ? ' (you)' : '')));
-                box.append(head, el('span', 'sc', `${T.found}/${S.words.length}`));
-                if (S.mode === 'teams') {
-                    const mems = el('span', 'mems');
-                    T.members.forEach(m => {
-                        const row = el('span', 'mem');
-                        row.append(badgeEl(m.avatar), document.createTextNode(m.name + (m.you ? ' (you)' : '') + (m.connected === false ? ' (away)' : '')));
-                        mems.append(row);
-                    });
-                    box.append(mems);
-                }
-                if (T.done) box.append(el('span', 'done', 'Finished'));
-                teams.append(box);
-            }
-            const ul = $('wordList');
-            ul.innerHTML = '';
-            let left = 0;
-            for (const w of S.words) {
-                const li = el('li', w.found ? 'f t' + mt : '');
-                if (!w.found) left++;
-                li.append(el('span', 'w', w.word), el('span', 'n', String(w.word.length)));
-                ul.append(li);
-            }
-            $('left').textContent = left + ' left';
-            $('result').hidden = !S.over;
-            if (S.over) {
-                const time = fmt(S.elapsed);
-                let text;
-                if (S.mode === 'solo') text = `All words found in ${time}.`;
-                else if (S.winner === mt) text = `${S.mode === 'teams' ? 'Your team wins' : 'You win'} in ${time}.`;
-                else text = `${teamLabel(S.winner)} wins in ${time}.`;
-                $('resultText').textContent = text;
-            }
-        }
-        /* ---------- keyboard ---------- */
-        const MOVES = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
-        document.addEventListener('keydown', e => {
-            if (!S || !S.started || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-            if (MOVES[e.key]) {
-                e.preventDefault();
-                // Step up then right to reach a diagonal neighbour.
-                send({ type: 'move', dx: MOVES[e.key][0], dy: MOVES[e.key][1] });
-            } else if (e.code === 'Space') {
-                e.preventDefault();
-                if (!e.repeat) send({ type: 'select' });
-            } else if (e.key === 'Escape') {
-                send({ type: 'cancel' });
-            }
-        });
-        $('again').addEventListener('click', () => send({ type: 'restart' }));
-    </script>
+    <script type="module" src="/static/main.js"></script>
 </body>
 
 </html>
