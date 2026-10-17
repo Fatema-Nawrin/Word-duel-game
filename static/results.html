@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Word Duel – Results</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&family=Pacifico&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f7fff0;
+            --paper: #ffffff;
+            --ink: #17131f;
+            --muted: #5d6a63;
+            --dots: #dcf3cc;
+            --yellow: #ffd600;
+            --cyan: #00d1ff;
+            --t0: #ff2d78;
+            --t1: #0a7ad6;
+            --t2: #00a86b;
+            --t3: #8a3cff;
+            --f-display: 'Bricolage Grotesque', system-ui, sans-serif;
+            --f-body: 'DM Sans', system-ui, sans-serif;
+            --f-mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        body {
+            margin: 0;
+            min-width: 320px;
+            min-height: 100vh;
+            color: var(--ink);
+            font: 16px/1.5 var(--f-body);
+            background: radial-gradient(var(--dots) 1.7px, transparent 1.9px) 0 0 / 17px 17px, var(--bg);
+        }
+
+        main {
+            width: min(720px, 100%);
+            margin: 0 auto;
+            padding: clamp(20px, 5vw, 48px) clamp(12px, 4vw, 24px) 48px;
+            display: grid;
+            gap: 22px;
+            justify-items: center;
+        }
+
+        h1.logo {
+            margin: 0;
+            color: var(--t0);
+            font: 400 clamp(2.6rem, 9vw, 4.2rem)/1 'Pacifico', cursive;
+            -webkit-text-stroke: 3px var(--ink);
+            paint-order: stroke fill;
+            text-shadow: 4px 4px 0 var(--ink);
+            text-align: center;
+        }
+
+        .sticker {
+            margin: 0;
+            padding: 3px 16px;
+            background: var(--yellow);
+            border: 3px solid var(--ink);
+            border-radius: 999px;
+            box-shadow: 3px 3px 0 var(--ink);
+            font: 800 .78rem/1.4 var(--f-body);
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            transform: rotate(-2deg);
+        }
+
+        .headline {
+            width: 100%;
+            text-align: center;
+            display: grid;
+            gap: 4px;
+        }
+
+        .headline h2 {
+            margin: 0;
+            font: 800 clamp(1.6rem, 6vw, 2.4rem)/1.15 var(--f-display);
+        }
+
+        .headline p {
+            margin: 0;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        ol.board {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            display: grid;
+            gap: 14px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            background: var(--paper);
+            border: 3px solid var(--ink);
+            border-radius: 18px;
+            box-shadow: 5px 5px 0 var(--tc);
+        }
+
+        .row.me {
+            background: #fff7c2;
+        }
+
+        .row.first {
+            padding: 20px 18px;
+            border-radius: 22px;
+            box-shadow: 7px 7px 0 var(--tc);
+        }
+
+        .pos {
+            display: grid;
+            place-items: center;
+            min-width: 3.2rem;
+            height: 3.2rem;
+            padding: 0 .5rem;
+            border: 3px solid var(--ink);
+            border-radius: 14px;
+            background: var(--paper);
+            font: 800 1.2rem/1 var(--f-display);
+            box-shadow: 2px 2px 0 var(--ink);
+        }
+
+        .first .pos {
+            min-width: 4rem;
+            height: 4rem;
+            background: var(--yellow);
+            font-size: 1.5rem;
+        }
+
+        .r2 .pos {
+            background: var(--cyan);
+        }
+
+        .name {
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .name b {
+            display: block;
+            color: var(--tct, var(--ink));
+            font: 800 1.15rem/1.2 var(--f-display);
+        }
+
+        .first .name b {
+            font-size: 1.4rem;
+        }
+
+        .name small {
+            display: block;
+            color: var(--muted);
+            font-size: .85rem;
+        }
+
+        .score {
+            text-align: right;
+        }
+
+        .score strong {
+            display: block;
+            color: var(--tct, var(--ink));
+            font: 800 1.7rem/1 var(--f-display);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .score span {
+            display: block;
+            margin-top: 3px;
+            color: var(--muted);
+            font: 500 .78rem var(--f-mono);
+        }
+
+        .t0 {
+            --tc: var(--t0);
+            --tct: #d4125d;
+        }
+
+        .t1 {
+            --tc: var(--t1);
+            --tct: #0a62ad;
+        }
+
+        .t2 {
+            --tc: var(--t2);
+            --tct: #00805a;
+        }
+
+        .t3 {
+            --tc: var(--t3);
+            --tct: #6a22d6;
+        }
+
+        .btn {
+            min-height: 44px;
+            padding: .7rem 1.4rem;
+            border: 3px solid var(--ink);
+            border-radius: 12px;
+            background: var(--t0);
+            color: #fff;
+            font: 800 1rem var(--f-body);
+            box-shadow: 4px 4px 0 var(--ink);
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform .12s ease, box-shadow .12s ease;
+        }
+
+        .btn:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 5px 5px 0 var(--ink);
+        }
+
+        .btn:active {
+            transform: translate(3px, 3px);
+            box-shadow: 1px 1px 0 var(--ink);
+        }
+
+        .empty {
+            padding: 20px;
+            background: var(--paper);
+            border: 3px solid var(--ink);
+            border-radius: 18px;
+            box-shadow: 5px 5px 0 var(--ink);
+            text-align: center;
+        }
+
+        @media (max-width: 480px) {
+            .row {
+                grid-template-columns: auto minmax(0, 1fr);
+            }
+
+            .score {
+                grid-column: 1 / -1;
+                display: flex;
+                align-items: baseline;
+                justify-content: space-between;
+                text-align: left;
+            }
+
+            .score span {
+                margin: 0;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .btn {
+                transition: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <h1 class="logo">Word&nbsp;&nbsp;Duel</h1>
+        <p class="sticker">Final results</p>
+
+        <section class="headline" id="headline" hidden>
+            <h2 id="title"></h2>
+            <p id="sub"></p>
+        </section>
+
+        <ol class="board" id="board"></ol>
+
+        <div class="empty" id="empty" hidden>
+            <p>There are no results to show. The game may still be running, or this page was opened on its own.</p>
+        </div>
+
+        <a class="btn" id="lobby" href="/">Back to lobby</a>
+    </main>
+
+    <script>
+        /* The game page saves the final state under "wd-results" and sends everyone here. */
+        (function () {
+            var NAMES = ['Pink', 'Blue', 'Green', 'Purple'];
+            var $ = function (id) { return document.getElementById(id); };
+
+            function ordinal(n) {
+                var s = ['th', 'st', 'nd', 'rd'], v = n % 100;
+                return n + (s[(v - 20) % 10] || s[v] || s[0]);
+            }
+            function fmt(sec) {
+                sec = Math.max(0, Math.floor(sec));
+                return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+            }
+
+            var R = null;
+            try { R = JSON.parse(sessionStorage.getItem('wd-results')); } catch (e) { }
+            if (!R || !R.ranking || !R.ranking.length) { $('empty').hidden = false; return; }
+
+            var solo = R.mode === 'solo', teams = R.mode === 'teams';
+            var members = function (t) {
+                var x = (R.teams || []).filter(function (q) { return q.team === t; })[0];
+                return x ? x.members : [];
+            };
+            var label = function (t) { return teams ? NAMES[t] + ' team' : (members(t)[0] || NAMES[t]); };
+            var mine = R.ranking.filter(function (r) { return r.team === R.myTeam; })[0];
+
+            // headline
+            if (solo) {
+                $('title').textContent = mine && mine.done ? 'All words found in ' + fmt(mine.at) : "Time's up";
+                $('sub').textContent = mine && mine.done ? '' : 'You found ' + (mine ? mine.found : 0) + ' of ' + R.total + ' words.';
+            } else if (mine) {
+                $('title').textContent = (teams ? 'Your team finished ' : 'You finished ') + ordinal(mine.rank);
+                $('sub').textContent = R.timeUp ? "Time's up after " + fmt(R.elapsed) + '.' : 'Every team found every word in ' + fmt(R.elapsed) + '.';
+            }
+            $('headline').hidden = !mine;
+
+            // ranking (solo shows just the one row)
+            var list = $('board');
+            R.ranking.forEach(function (r) {
+                var li = document.createElement('li');
+                li.className = 'row t' + r.team + (r.team === R.myTeam ? ' me' : '') + (r.rank === 1 ? ' first' : '') + (r.rank === 2 ? ' r2' : '');
+
+                var pos = document.createElement('div');
+                pos.className = 'pos';
+                pos.textContent = solo ? '' : ordinal(r.rank);
+                if (solo) pos.hidden = true;
+
+                var name = document.createElement('div');
+                name.className = 'name';
+                var b = document.createElement('b');
+                b.textContent = label(r.team) + (r.team === R.myTeam && !solo ? ' (you)' : '');
+                name.appendChild(b);
+                if (teams && members(r.team).length) {
+                    var s = document.createElement('small');
+                    s.textContent = members(r.team).join(' & ');
+                    name.appendChild(s);
+                }
+
+                var score = document.createElement('div');
+                score.className = 'score';
+                var big = document.createElement('strong');
+                big.textContent = r.found + '/' + R.total;
+                var small = document.createElement('span');
+                small.textContent = r.done ? 'all words in ' + fmt(r.at)
+                    : r.found ? 'last word at ' + fmt(r.at) : 'no words found';
+                score.append(big, small);
+
+                li.append(pos, name, score);
+                list.appendChild(li);
+            });
+            if (solo) list.querySelector('.row').style.gridTemplateColumns = 'minmax(0, 1fr) auto';
+
+            // the finished game is over: don't offer to rejoin it from the lobby
+            $('lobby').addEventListener('click', function () {
+                try { sessionStorage.removeItem('wd-results'); sessionStorage.removeItem('wd-session'); } catch (e) { }
+            });
+        })();
+    </script>
+</body>
+
+</html>

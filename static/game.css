@@ -175,6 +175,12 @@ canvas {
   font-variant-numeric: tabular-nums;
 }
 
+/* last minute: the timer turns pink */
+#timer.low {
+  background: var(--t0);
+  color: #fff;
+}
+
 /* room code stays small and quiet */
 #roomCode {
   display: inline-flex;

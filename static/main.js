@@ -58,4 +58,3 @@ document.addEventListener('keydown', e => {
         send({ type: 'cancel' });
     }
 });
-$('again').addEventListener('click', () => send({ type: 'restart' }));

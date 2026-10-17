@@ -19,8 +19,26 @@ function teamLabel(t) {
 function updateTimer() {
     const S = state.S;
     if (!S || !S.started) return;
-    const t = S.over ? S.elapsed : S.elapsed + (performance.now() - S.recv) / 1000;
-    $('timer').textContent = fmt(t);
+    // countdown: the time left in the 10 minutes
+    const used = S.elapsed + (performance.now() - S.recv) / 1000;
+    const left = Math.max(0, Math.ceil(S.limit - used));
+    $('timer').textContent = fmt(left);
+    $('timer').classList.toggle('low', left <= 60);
+}
+
+// The round is over: keep the final result for the results page and go there.
+// (The game page itself never shows who won.)
+function goToResults() {
+    const S = state.S;
+    try {
+        sessionStorage.setItem('wd-results', JSON.stringify({
+            mode: S.mode, total: S.words.length, myTeam: S.myTeam,
+            timeUp: S.timeUp, elapsed: S.elapsed, ranking: S.ranking,
+            teams: S.teams.map(t => ({ team: t.team, members: t.members.map(m => m.name) })),
+        }));
+        sessionStorage.removeItem('wd-session');  // the lobby should not offer to rejoin a finished game
+    } catch (err) { }
+    location.href = '/static/results.html';
 }
 setInterval(updateTimer, 500);
 
@@ -96,6 +114,7 @@ function syncPawns() {
 
 export function render() {
     const S = state.S;
+    if (S.over) { goToResults(); return; }
     $('roomCode').textContent = S.code;
     $('waiting').hidden = S.started;
     $('board').hidden = !S.started;
@@ -166,15 +185,5 @@ export function render() {
         const li = el('li', w.found ? 'f t' + mt : '');
         li.append(el('span', 'w', w.word), el('span', 'n', String(w.word.length)));
         ul.append(li);
-    }
-
-    $('result').hidden = !S.over;
-    if (S.over) {
-        const time = fmt(S.elapsed);
-        let text;
-        if (S.mode === 'solo') text = `All words found in ${time}.`;
-        else if (S.winner === mt) text = `${S.mode === 'teams' ? 'Your team wins' : 'You win'} in ${time}.`;
-        else text = `${teamLabel(S.winner)} wins in ${time}.`;
-        $('resultText').textContent = text;
     }
 }

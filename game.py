@@ -8,14 +8,18 @@ from typing import Optional
 DIRS = [(0, 1), (1, 0), (1, 1), (-1, 1), (0, -1), (-1, 0), (-1, -1), (1, -1)]
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 BOARD_SIZE = 15
+TIME_LIMIT = 600  # seconds a round lasts (10 minutes)
 
 WORD_POOL = {
     "short": ["LION", "OVEN", "MOON", "ROME", "OSLO", "ZEBRA", "COMET", "ORBIT", "WHISK", "PARIS", "OTTER", "PANDA", "BOOK", "TREE", "FISH", "RAIN", "DOOR", "SAND", "WAVE", "BELL", "CLOUD", "PIANO", "TIGER", "LEMON"],
     "medium": ["LONDON", "ROCKET", "KETTLE", "FALCON", "GALAXY", "MADRID", "SKILLET", "SPATULA", "ECLIPSE", "GIRAFFE", "KANGAROO", "LISBON", "GUITAR", "BRIDGE", "CASTLE", "DOLPHIN", "LANTERN", "PUZZLE", "VOLCANO", "WINDOW", "PENGUIN", "THUNDER", "BLANKET", "HARBOUR"],
     "long": ["ASTRONAUT", "TELESCOPE", "DISHWASHER", "PORCUPINE", "CHIMPANZEE", "COPENHAGEN", "EDINBURGH", "AMSTERDAM", "CROCODILE", "MICROWAVE",  "BUTTERFLY", "ADVENTURE", "LIGHTHOUSE", "RAINFOREST", "SKYSCRAPER", "WATERFALL", "MOUNTAINS", "CHOCOLATE", "DINOSAUR", "NOTEBOOK"],
+    "huge": ["PHOTOGRAPHY", "HELICOPTERS", "CATERPILLAR", "MOUNTAINEER", "TRANSPARENT", "SKATEBOARDS", "ENCYCLOPEDIA", "THUNDERSTORM", "REFRIGERATOR", "CHAMPIONSHIP", "STRAWBERRIES", "BREAKTHROUGH"],
 }
-WORD_COUNTS = {"short": 3, "medium": 5, "long": 4}
+WORD_COUNTS = {"short": 4, "medium": 7, "long": 4, "huge": 1}  # 16 words per round, one of them 11 or 12 letters
+DECOY_COUNT = 6  # fake near-copies of real words hidden in the filler
 
+MAX_PER_WORD = 6  # in team games, one player can pick at most this many letters of a single word
 VALID_SIZES = (1, 2, 3, 4, 6, 8)
 AVATAR_COUNT = 8  # the page draws 8 characters; each player in a room gets a different one
 
@@ -47,6 +51,32 @@ def _place(grid, word, size, rng):
     return False
 
 
+def _decoys(grid, words, size, rng, count):
+    """Hide fake copies of real words: the same word with one letter changed (often the last one).
+
+    A decoy never overwrites a real word. The changed letter always goes into an empty cell,
+    so a decoy can never be completed into the real word and picking it earns nothing.
+    """
+    placed = 0
+    for _ in range(count * 200):
+        if placed >= count:
+            break
+        word = rng.choice([w for w in words if len(w) >= 5])
+        i = len(word) - 1 if rng.random() < 0.6 else rng.randrange(1, len(word) - 1)
+        fake = word[:i] + rng.choice([c for c in ALPHABET if c != word[i]]) + word[i + 1:]
+        dr, dc = rng.choice(DIRS)
+        r, c = rng.randrange(size), rng.randrange(size)
+        er, ec = r + dr * (len(fake) - 1), c + dc * (len(fake) - 1)
+        if not (0 <= er < size and 0 <= ec < size):
+            continue
+        cells = [(r + dr * k, c + dc * k) for k in range(len(fake))]
+        if all(grid[y][x] in ("", fake[k]) for k, (y, x) in enumerate(cells)) and grid[cells[i][0]][cells[i][1]] == "":
+            for k, (y, x) in enumerate(cells):
+                grid[y][x] = fake[k]
+            placed += 1
+    return placed
+
+
 def make_grid(words, size=BOARD_SIZE, rng=None):
     """Return a size x size grid (list of rows) with every word hidden in it."""
     rng = rng or random.Random()
@@ -55,6 +85,7 @@ def make_grid(words, size=BOARD_SIZE, rng=None):
     for _ in range(60):
         grid = [[""] * size for _ in range(size)]
         if all(_place(grid, w, size, rng) for w in ordered):
+            _decoys(grid, words, size, rng, DECOY_COUNT)
             pool = "".join(words) + ALPHABET  # filler leans on the word letters
             for r in range(size):
                 for c in range(size):
@@ -125,8 +156,9 @@ class Room:
         self.size = len(self.grid)
         self.spots = {w: occurrences(self.grid, w) for w in self.words}  # server only
         self.found = [{} for _ in range(self.team_count)]  # per team: word -> {"cells": [[r, c], ...]}
-        self.finished_at = [None] * self.team_count  # seconds from the start
-        self.winner = None
+        self.finished_at = [None] * self.team_count  # seconds from the start, when a team found every word
+        self.last_at = [None] * self.team_count  # seconds from the start, when a team found its latest word
+        self.ended_at = None  # set early only if every team finds every word
         self.t0 = self.clock()
         for p in self.players.values():
             p.picked = []
@@ -136,16 +168,38 @@ class Room:
         return self.rng.randrange(self.size), self.rng.randrange(self.size)
 
     @property
+    def time_up(self):
+        """True once the 10 minutes are used up."""
+        return self.started and self.ended_at is None and self.clock() - self.t0 >= TIME_LIMIT
+
+    @property
     def over(self):
-        return self.winner is not None
+        """The round runs the full 10 minutes, unless every team has found every word."""
+        return self.ended_at is not None or self.time_up
+
+    def remaining(self):
+        return max(0.0, TIME_LIMIT - self.elapsed())
+
+    def ranking(self):
+        """Teams best first: most words found, then whoever got there sooner.
+        Teams that are completely level share a rank (1, 2, 2, 4 ...)."""
+        key = lambda t: (-len(self.found[t]), self.last_at[t] if self.last_at[t] is not None else 0)
+        order = sorted(range(self.team_count), key=key)
+        out = []
+        for i, t in enumerate(order):
+            rank = out[-1]["rank"] if out and key(order[i - 1]) == key(t) else i + 1
+            out.append({"team": t, "rank": rank, "found": len(self.found[t]),
+                        "at": None if self.last_at[t] is None else round(self.last_at[t], 1),
+                        "done": self.finished_at[t] is not None})
+        return out
 
     def elapsed(self):
-        """Seconds since the round began, frozen at the winner's time once it is over."""
+        """Seconds since the round began, capped at the time limit."""
         if not self.started:
             return 0.0
-        if self.winner is not None:
-            return self.finished_at[self.winner]
-        return self.clock() - self.t0
+        if self.ended_at is not None:
+            return self.ended_at
+        return min(TIME_LIMIT, self.clock() - self.t0)
 
     def add_player(self, pid, name):
         """Add a player. The game starts by itself once the room is full."""
@@ -216,6 +270,8 @@ class Room:
         p = self.players.get(pid)
         if not p or not self.started or self.over:
             return
+        if self.finished_at[p.team] is not None:
+            return  # this team already found every word
         cell = (p.r, p.c)
         if cell in p.picked:
             p.picked.remove(cell)
@@ -225,8 +281,8 @@ class Room:
                 if word in self.found[p.team]:
                     continue
                 for cells in self.spots[word]:
-                    if cell in cells and len(cells)>5:
-                        if sum(1 for c in cells if c in p.picked) >= 5:
+                    if cell in cells and len(cells) > MAX_PER_WORD:
+                        if sum(1 for c in cells if c in p.picked) >= MAX_PER_WORD:
                             return  # don't allow picking a letter that would complete a word for the team
         p.picked.append(cell)
 
@@ -242,10 +298,10 @@ class Room:
             for cells in self.spots[word]:
                 if not all(c in picked for c in cells):
                     continue
-                if self.team_size>1 and len(cells)>5:
+                if self.team_size > 1 and len(cells) > MAX_PER_WORD:
                     # mine=[c for c in cells if c in p.picked]
                     shares=[sum(1 for c in cells if c in q.picked) for q in teammates]
-                    if max(shares)>5 and sum(1 for s in shares if s>0)==1:
+                    if max(shares) > MAX_PER_WORD and sum(1 for s in shares if s > 0) == 1:
                         continue
                 done.append((word, cells))
                 break
@@ -257,9 +313,12 @@ class Room:
             used.update(cells)
         for q in teammates:
             q.picked = [c for c in q.picked if c not in used]
+        now = self.clock() - self.t0
+        self.last_at[p.team] = now
         if len(found) == len(self.words):
-            self.finished_at[p.team] = self.clock() - self.t0
-            self.winner = p.team
+            self.finished_at[p.team] = now
+            if all(t is not None for t in self.finished_at):
+                self.ended_at = now
 
     def snapshot(self, you):
         """What gets sent to one player.
@@ -305,7 +364,9 @@ class Room:
                  "done": self.finished_at[t] is not None}
                 for t in range(self.team_count)
             ],
-            "winner": self.winner,
+            "ranking": self.ranking(),
             "over": self.over,
+            "timeUp": self.time_up,
+            "limit": TIME_LIMIT,
             "elapsed": round(self.elapsed(), 1),
         }

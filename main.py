@@ -9,10 +9,21 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from game import VALID_SIZES, Room
+from game import TIME_LIMIT, VALID_SIZES, Room
 
 app = FastAPI()
 BASE = Path(__file__).parent
+
+
+@app.middleware("http")
+async def always_recheck(request, call_next):
+    """Make the browser re-check the page, scripts and styles on every load, so edits show up at once.
+    (It still uses its saved copy when nothing changed, so this is cheap.)"""
+    response = await call_next(request)
+    if request.url.path == "/" or request.url.path.startswith("/static"):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
+
 
 app.mount(
     "/static",
@@ -25,6 +36,7 @@ rooms = {}        # room code -> Room
 sockets = {}      # room code -> {player id -> WebSocket}
 tokens = {}       # room code -> {secret token -> player id}, used to come back to a seat
 empty_since = {}  # room code -> when the last player left a running game
+clocks = {}       # room code -> (round number, task that tells everyone when time is up)
 
 # How long a running game is kept after everyone has left, so people can come back.
 KEEP_EMPTY_ROOM_SECONDS = 600
@@ -50,6 +62,9 @@ def drop_room(code):
     sockets.pop(code, None)
     tokens.pop(code, None)
     empty_since.pop(code, None)
+    old = clocks.pop(code, None)
+    if old:
+        old[1].cancel()
 
 
 def drop_room_if_still_empty(code):
@@ -70,6 +85,29 @@ async def broadcast(code):
     for pid in dead:
         sockets[code].pop(pid, None)
         room.remove_player(pid)
+
+
+async def announce_time_up(code, round_no, delay):
+    """Sleep until the round's time runs out, then send everyone the final state."""
+    await asyncio.sleep(delay)
+    room = rooms.get(code)
+    if room and room.round == round_no and room.time_up:
+        await broadcast(code)
+
+
+def arm_clock(code):
+    """Make sure a time-up message is scheduled for the current round of a running game."""
+    room = rooms[code]
+    if not room.started or room.over:
+        return
+    current = clocks.get(code)
+    if current and current[0] == room.round and not current[1].done():
+        return
+    if current:
+        current[1].cancel()
+    delay = max(0.0, TIME_LIMIT - room.elapsed()) + 0.3
+    clocks[code] = (room.round, asyncio.get_running_loop().create_task(
+        announce_time_up(code, room.round, delay)))
 
 
 async def refuse(ws, text):
@@ -106,6 +144,7 @@ async def run_player(ws, code, name, rejoin=""):
     sockets[code][pid] = ws
     # The token goes only to this player. Other players only ever see the public id.
     await ws.send_json({"type": "hello", "code": code, "token": token})
+    arm_clock(code)
     await broadcast(code)
 
     try:
@@ -123,6 +162,7 @@ async def run_player(ws, code, name, rejoin=""):
                 room.cancel(pid)
             elif kind == "restart" and room.over:
                 room.new_round()
+                arm_clock(code)
             else:
                 continue
             await broadcast(code)
