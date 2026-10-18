@@ -38,7 +38,7 @@ function goToResults() {
         }));
         sessionStorage.removeItem('wd-session');  // the lobby should not offer to rejoin a finished game
     } catch (err) { }
-    location.href = '/static/results.html';
+    location.href = '/result';
 }
 setInterval(updateTimer, 500);
 

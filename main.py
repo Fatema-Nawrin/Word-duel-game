@@ -1,4 +1,3 @@
-"""Word Duel server. Run with:  python -m uvicorn main:app --reload"""
 import asyncio
 import json
 import secrets
@@ -20,7 +19,7 @@ async def always_recheck(request, call_next):
     """Make the browser re-check the page, scripts and styles on every load, so edits show up at once.
     (It still uses its saved copy when nothing changed, so this is cheap.)"""
     response = await call_next(request)
-    if request.url.path == "/" or request.url.path.startswith("/static"):
+    if request.url.path in {"/", "/result"} or request.url.path.startswith("/static"):
         response.headers["Cache-Control"] = "no-cache"
     return response
 
@@ -48,6 +47,11 @@ CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 @app.get("/")
 async def index():
     return FileResponse(BASE / "index.html")
+
+
+@app.get("/result")
+async def results():
+    return FileResponse(BASE / "static" / "results.html")
 
 
 def new_code():

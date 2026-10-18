@@ -1,0 +1,363 @@
+/* Colours, shadows and most component styling live in lobby.css and game.css.
+   This block only holds fonts, structure and the board's flat fallback. */
+:root {
+    --f-display: 'Bricolage Grotesque', system-ui, sans-serif;
+    --f-body: 'DM Sans', system-ui, sans-serif;
+    --f-mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+body {
+    margin: 0;
+    color: var(--ink);
+    font: 16px/1.5 var(--f-body);
+}
+
+.app {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 28px 16px 40px;
+    display: grid;
+    gap: 20px;
+}
+
+.btn {
+    font: inherit;
+    cursor: pointer;
+}
+
+.hint {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+.rejoin {
+    display: grid;
+}
+
+.err {
+    margin: 0;
+    color: var(--danger);
+    font-weight: 500;
+    min-height: 1.4em;
+}
+
+/* team colours: an element with a t0..t3 class passes that team's colours to everything inside it */
+.t0 {
+    --tc: var(--t0);
+    --tct: var(--t0t);
+}
+
+.t1 {
+    --tc: var(--t1);
+    --tct: var(--t1t);
+}
+
+.t2 {
+    --tc: var(--t2);
+    --tct: var(--t2t);
+}
+
+.t3 {
+    --tc: var(--t3);
+    --tct: var(--t3t);
+}
+
+/* avatars: every character is a round badge */
+.badge {
+    display: block;
+    flex: none;
+    border-radius: 50%;
+}
+
+.badge svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* lobby */
+.join {
+    display: grid;
+}
+
+.field {
+    display: grid;
+}
+
+.field label {
+    text-transform: uppercase;
+}
+
+.field input,
+.field select {
+    width: 100%;
+}
+
+#code {
+    font-family: var(--f-mono);
+    text-transform: uppercase;
+}
+
+.modes {
+    margin: 0;
+    display: grid;
+}
+
+.mode {
+    position: relative;
+    display: block;
+}
+
+.mode input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    margin: 0;
+    cursor: pointer;
+}
+
+.mode span {
+    font-weight: 700;
+}
+
+.waiting {
+    display: grid;
+}
+
+.waiting h2 {
+    margin: 0;
+}
+
+.waiting ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+}
+
+.waiting li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+
+.waiting li.pop .badge {
+    animation: drop 0.5s cubic-bezier(.3, 1.4, .5, 1);
+}
+
+.waiting .code {
+    justify-self: start;
+}
+
+/* game */
+.keys {
+    margin: 0;
+}
+
+kbd {
+    font-family: var(--f-mono);
+}
+
+/* the board: letters in .grid, characters in .pawns on top so they can slide */
+.stage {
+    container-type: inline-size;
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(var(--n, 13), 1fr);
+    aspect-ratio: 1;
+    user-select: none;
+}
+
+.cell {
+    position: relative;
+    display: grid;
+    place-items: center;
+    font-family: var(--f-mono);
+    line-height: 1;
+}
+
+/* the cell you stand on: its letter is repeated in a chip, because your character covers the letter */
+.cell.here::after {
+    content: attr(data-l);
+    position: absolute;
+    left: 7%;
+    top: 5%;
+    font-size: 0.55em;
+    line-height: 1.25;
+    padding: 0 0.3em;
+    border-radius: 0.3em;
+}
+
+.pawns {
+    position: absolute;
+    inset: 2px;
+    pointer-events: none;
+}
+
+.pawn {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: calc(100% / var(--n, 13));
+    height: calc(100% / var(--n, 13));
+    transform: translate(calc(var(--c, 0) * 100%), calc(var(--r, 0) * 100%));
+    transition: transform 0.14s ease-out;
+    z-index: 1;
+}
+
+.pawn.me {
+    z-index: 2;
+}
+
+.pawn .badge {
+    position: absolute;
+    right: calc(-8% + var(--o, 0) * 28%);
+    bottom: -10%;
+    width: 72%;
+    height: 72%;
+    box-shadow: 0 0 0 2px var(--tc), 0 2px 4px rgba(0, 0, 0, 0.35);
+}
+
+.pawn.me .badge {
+    box-shadow: 0 0 0 3px var(--ink), 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+.pawn .badge.drop {
+    animation: drop 0.6s cubic-bezier(.3, 1.4, .5, 1);
+}
+
+.pawn .badge.hop {
+    animation: hop 0.16s ease-out;
+}
+
+@keyframes drop {
+    from {
+        transform: translateY(-420%);
+        opacity: 0;
+    }
+
+    to {
+        transform: none;
+        opacity: 1;
+    }
+}
+
+@keyframes hop {
+    45% {
+        transform: translateY(-16%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pawn {
+        transition: none;
+    }
+
+    .pawn .badge.drop,
+    .pawn .badge.hop,
+    .waiting li.pop .badge {
+        animation: none;
+    }
+}
+
+/* 3D board (Three.js). The flat grid above stays as a fallback when WebGL is not available. */
+.stage.gl {
+    max-width: 760px;
+}
+
+.stage.gl .grid,
+.stage.gl .pawns {
+    display: none;
+}
+
+.stage canvas.gl {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 4px 0 rgba(19, 20, 31, 0.397));
+}
+
+.info .lab {
+    display: block;
+    text-transform: uppercase;
+}
+
+.tbox {
+    display: grid;
+    align-content: start;
+}
+
+.tbox .tl {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+}
+
+.tbox .tl .badge {
+    width: 24px;
+    height: 24px;
+    box-shadow: 0 0 0 1.5px var(--tc);
+}
+
+.tbox .mems {
+    display: grid;
+    gap: 4px;
+}
+
+.tbox .mem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tbox .mem .badge {
+    width: 22px;
+    height: 22px;
+    box-shadow: 0 0 0 1.5px var(--tc);
+}
+
+.tbox .done {
+    font-weight: 700;
+}
+
+.words h2 {
+    justify-content: space-between;
+}
+
+.words h2 span {
+    font-family: var(--f-body);
+}
+
+.words ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.result {
+    display: grid;
+    gap: 10px;
+    justify-items: start;
+}
+
+.result p {
+    margin: 0;
+}
