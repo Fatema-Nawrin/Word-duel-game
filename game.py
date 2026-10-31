@@ -1,14 +1,14 @@
-"""Word Duel game rules. Plain Python, no web code, so it is easy to test."""
 import random
 import time
 from dataclasses import dataclass, field
 from typing import Optional
 
 # (row change, column change) for the eight directions a word can run in.
-DIRS = [(0, 1), (1, 0), (1, 1), (-1, 1), (0, -1), (-1, 0), (-1, -1), (1, -1)]
+DIRS = [(0, 1), (1, 0), (1, 1), (-1, 1), (-1, 0), (-1, -1), (1, -1)]
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-BOARD_SIZE = 15
+BOARD_SIZE = 16
 TIME_LIMIT = 600  # seconds a round lasts (10 minutes)
+
 
 WORD_POOL = {
     "short": ["LION", "OVEN", "MOON", "ROME", "OSLO", "ZEBRA", "COMET", "ORBIT", "WHISK", "PARIS", "OTTER", "PANDA", "BOOK", "TREE", "FISH", "RAIN", "DOOR", "SAND", "WAVE", "BELL", "CLOUD", "PIANO", "TIGER", "LEMON"],
@@ -16,24 +16,25 @@ WORD_POOL = {
     "long": ["ASTRONAUT", "TELESCOPE", "DISHWASHER", "PORCUPINE", "CHIMPANZEE", "COPENHAGEN", "EDINBURGH", "AMSTERDAM", "CROCODILE", "MICROWAVE",  "BUTTERFLY", "ADVENTURE", "LIGHTHOUSE", "RAINFOREST", "SKYSCRAPER", "WATERFALL", "MOUNTAINS", "CHOCOLATE", "DINOSAUR", "NOTEBOOK"],
     "huge": ["PHOTOGRAPHY", "HELICOPTERS", "CATERPILLAR", "MOUNTAINEER", "TRANSPARENT", "SKATEBOARDS", "ENCYCLOPEDIA", "THUNDERSTORM", "REFRIGERATOR", "CHAMPIONSHIP", "STRAWBERRIES", "BREAKTHROUGH"],
 }
-WORD_COUNTS = {"short": 4, "medium": 7, "long": 4, "huge": 1}  # 16 words per round, one of them 11 or 12 letters
-DECOY_COUNT = 6  # fake near-copies of real words hidden in the filler
+WORD_COUNTS = {"short": 4, "medium": 7, "long": 4, "huge": 1} 
+DECOY_COUNT = 6 
 
-MAX_PER_WORD = 6  # in team games, one player can pick at most this many letters of a single word
+MAX_PER_WORD = 6  # in team games
 VALID_SIZES = (1, 2, 3, 4, 6, 8)
-AVATAR_COUNT = 8  # the page draws 8 characters; each player in a room gets a different one
+AVATAR_COUNT = 8  # the page draws 8 characters
+PICK_BUFFER = 3
 
 
 def layout(capacity):
-    """Return (team_size, team_count) for a room with this many players.
-
+    """Return (team_size, team_count) for a room.
     1 to 3 players: everyone plays alone (1 player is solo, 2 or 3 race each other).
     4, 6 or 8 players: teams of 2.
     """
     if capacity not in VALID_SIZES:
-        raise ValueError("Rooms hold 1, 2, 3, 4, 6 or 8 players")
-    team_size = 2 if capacity >= 4 else 1
-    return team_size, capacity // team_size
+        raise ValueError("Room holds 1, 2, 3, 4, 6 or 8 players")
+    team_size=2 if capacity >=4 else 1
+    team_count=capacity//team_size
+    return team_size, team_count
 
 
 def _place(grid, word, size, rng):
@@ -149,7 +150,6 @@ class Room:
 
     def new_round(self):
         self.round += 1
-        self.theme = "mixed"
         self.words = [w for k, n in WORD_COUNTS.items() for w in self.rng.sample(WORD_POOL[k], n)]
         self.rng.shuffle(self.words)
         self.grid = make_grid(self.words, BOARD_SIZE, self.rng)
@@ -276,6 +276,10 @@ class Room:
         if cell in p.picked:
             p.picked.remove(cell)
             return
+        team_found=self.found[p.team]
+        remaining=[len(w) for w in self.words if w not in team_found]
+        if len(p.picked) >= max(remaining) + PICK_BUFFER:
+            return
         if self.team_size>1:
             for word in self.words:
                 if word in self.found[p.team]:
@@ -298,11 +302,6 @@ class Room:
             for cells in self.spots[word]:
                 if not all(c in picked for c in cells):
                     continue
-                if self.team_size > 1 and len(cells) > MAX_PER_WORD:
-                    # mine=[c for c in cells if c in p.picked]
-                    shares=[sum(1 for c in cells if c in q.picked) for q in teammates]
-                    if max(shares) > MAX_PER_WORD and sum(1 for s in shares if s > 0) == 1:
-                        continue
                 done.append((word, cells))
                 break
         if not done:
@@ -345,7 +344,6 @@ class Room:
             "round": self.round,
             "size": self.size,
             "grid": self.grid,
-            "theme": self.theme,
             "myTeam": team,
             "words": [{"word": w, "found": w in found} for w in self.words],
             "found": [{"cells": f["cells"]} for f in found.values()],
