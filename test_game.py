@@ -6,7 +6,7 @@ import game
 from game import (AVATAR_COUNT, BOARD_SIZE, DECOY_COUNT, MAX_PER_WORD, TIME_LIMIT, VALID_SIZES,
                   WORD_COUNTS, WORD_POOL, Room, layout, make_grid, occurrences)
 
-DIRS = [(0, 1), (1, 0), (1, 1), (-1, 1), (0, -1), (-1, 0), (-1, -1), (1, -1)]
+DIRS = [(0, 1), (1, 0), (1, 1), (-1, 1), (-1, 0), (-1, -1), (1, -1)]
 
 
 class Clock:
